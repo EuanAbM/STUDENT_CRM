@@ -184,26 +184,6 @@ $(document).ready(function() {
     $(document).ready(function() {
         $('.copy-icon').on('click', function() {
             var password = $(this).data('password');
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script>
-$(document).ready(function() {
-    $('#search').on('input', function() {  // Use 'input' event for real-time feedback
-        var searchText = $(this).val();
-        $.ajax({
-            url: '_includes/search.php',
-            type: 'POST',
-            data: {search: searchText},
-            success: function(data) {
-                $('#tableData').html(data);
-            },
-            error: function(xhr, status, error) {
-                console.error("AJAX Error: " + status + error);
-            }
-        });
-    });
-});
-</script>
-
             var $temp = $("<input>");
             $("body").append($temp);
             $temp.val(password).select();
