@@ -156,6 +156,22 @@ $result = mysqli_query($conn, $sql);
                     ?>
                 </tbody>
             </table>
+<script>
+$(document).ready(function() {
+    $('#search').keyup(function() {
+        var searchText = $(this).val();
+        $.ajax({
+            url: '_includes/search.php',
+            method: 'POST',
+            data: {search: searchText},
+            success: function(data) {
+                $('#tableData').html(data);
+            }
+        });
+    });
+});
+</script>
+
         </div>
         <button type="submit" name="delete" class="btn btn-danger mb-3">Delete Selected</button>
     </form>
