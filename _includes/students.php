@@ -87,7 +87,7 @@ if(isset($_POST['delete_records'])) {
     }
 }
 
-$sql = "SELECT * FROM student WHERE firstname LIKE '%$searchTerm%' OR lastname LIKE '%$searchTerm%' OR postcode LIKE '%$searchTerm%'";
+$sql = "SELECT * FROM student WHERE studentid LIKE '%$searchTerm%' OR firstname LIKE '%$searchTerm%' OR lastname LIKE '%$searchTerm%' OR postcode LIKE '%$searchTerm%'";
 $result = mysqli_query($conn, $sql);
 ?>
 
