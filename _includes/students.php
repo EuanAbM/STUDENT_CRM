@@ -47,6 +47,11 @@
             max-height: 100vh;
             margin: auto;
         }
+.table-responsive {
+    max-height: 75vh;
+    overflow-y: auto;
+}
+
     </style>
 </head>
 <body>
