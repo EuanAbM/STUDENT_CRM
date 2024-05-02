@@ -58,7 +58,7 @@
     </div>
     <form method="get" action="">
         <div class="form-group">
-            <input type="text" name="search" class="form-control" placeholder="Search by first name, last name, or postcode">
+<input type="text" name="search" class="form-control" placeholder="Search by ID, first name, last name, or postcode">
         </div>
         <button type="submit" class="btn btn-primary mb-3">Search</button>
     </form>
