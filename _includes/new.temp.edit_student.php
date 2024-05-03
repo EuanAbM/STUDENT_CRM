@@ -45,9 +45,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // Prepare and execute update statement
-    $updateStmt = $conn->prepare("UPDATE student SET firstname=?, lastname=?, dob=?, house=?, town=?, county=?, country=?, postcode=?, image=? WHERE studentid=?");
-    $updateStmt->bind_param("sssssssssi", $firstname, $lastname, $dob, $house, $town, $county, $country, $postcode, $image, $studentId);
-    $updateStmt->execute();
+    
+// Prepare and execute update statement
+$updateStmt = $conn->prepare("UPDATE student SET firstname=?, lastname=?, dob=?, house=?, town=?, county=?, country=?, postcode=?, image=?, email=?, phone=? WHERE studentid=?");
+$updateStmt->bind_param("sssssssssssi", $firstname, $lastname, $dob, $house, $town, $county, $country, $postcode, $image, $email, $phone, $studentId);
+$updateStmt->execute();
+
+// ...
+
+$sql = "UPDATE students SET ";
+$types = '';
+$values = [];
+
+if (!empty($_POST['lastname'])) {
+    $sql .= "lastname = ?, ";
+    $types .= 's';
+    $values[] = $_POST['lastname'];
+}
+if (!empty($_POST['email'])) {
+    $sql .= "email = ?, ";
+    $types .= 's';
+    $values[] = $_POST['email'];
+}
+// ... repeat for other fields ...
+$sql = rtrim($sql, ', ');  // remove trailing comma
+$sql .= " WHERE id = ?";
+
+$types .= 'i';
+$values[] = $_POST['id'];  // Assuming the form also includes a hidden field with the student ID
+
+$stmt = $conn->prepare($sql);
+$stmt->bind_param($types, ...$values);
+$stmt->execute();  // Execute the statement
 
     if (!empty($password)) {
         $password = password_hash($password, PASSWORD_DEFAULT);
@@ -56,9 +85,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $passwordStmt->execute();
     }
 
-    // Redirect back to students page
-    header('Location: students.php');
-    exit;
+
+
+
+
 }
 
 ?>
@@ -140,10 +170,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <p>Placeholder text</p>
                     <label for="firstname">First Name</label>
                     <input type="text" class="form-control" id="firstname" name="firstname" value="<?php echo htmlspecialchars($student['firstname']); ?>">
-                    <label for="lastname">Last Name</label
-                    <input type="text" class="form-control" id="lastname" name="lastname" value="<?php echo htmlspecialchars($student['lastname']); ?>">
-                    <label for="email">Email</label>
-                    <input type="email" class="form-control" id="email" name="email" value="<?php echo htmlspecialchars($student['email']); ?>">
+                    <div class="form-group">
+    <label for="lastname">Last Name</label>
+    <input type="text" class="form-control" id="lastname" name="lastname" value="<?php echo htmlspecialchars($student['lastname']); ?>">
+</div>
+<div class="form-group">
+    <label for="email">Email</label>
+    <input type="email" class="form-control" id="email" name="email" value="<?php echo htmlspecialchars($student['email']); ?>">
+</div>
+            
                     <label for="phone">Phone</label>
                     <input type="text" class="form-control" id="phone" name="phone" value="<?php echo htmlspecialchars($student['phone']); ?>">
                     <label for="password">Update Password</label>
