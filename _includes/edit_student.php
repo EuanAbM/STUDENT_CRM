@@ -184,3 +184,74 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 </body>
 </html>
+<!-- Student Details -->
+<div class="form-group">
+    <label for="firstname">First Name</label>
+    <input type="text" class="form-control" id="firstname" name="firstname" value="<?php echo $student['firstname']; ?>">
+</div>
+<div class="form-group">
+    <label for="lastname">Last Name</label>
+    <input type="text" class="form-control" id="lastname" name="lastname" value="<?php echo $student['lastname']; ?>">
+</div>
+<div class="form-group">
+    <label for="email">Email</label>
+    <input type="email" class="form-control" id="email" name="email" value="<?php echo $student['email']; ?>">
+</div>
+<div class="form-group">
+    <label for="phone">Phone</label>
+    <input type="text" class="form-control" id="phone" name="phone" value="<?php echo $student['phone']; ?>">
+</div>
+
+<!-- Address Section -->
+<div class="form-group">
+    <label for="address">Address</label>
+    <textarea class="form-control" id="address" name="address"><?php echo $student['address']; ?></textarea>
+</div>
+
+<!-- Emergency Contacts -->
+<div class="emergency-contacts">
+    <!-- Repeat this block for each emergency contact -->
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Emergency Contact</h5>
+            <p>Name: <input type="text" name="em_name[]"></p>
+            <p>Relation: <input type="text" name="em_relation[]"></p>
+            <p>Phone: <input type="text" name="em_phone[]"></p>
+        </div>
+    </div>
+</div>
+
+<!-- Modules -->
+<div class="form-group">
+    <label for="modules">Assign Modules</label>
+    <select multiple class="form-control" id="modules" name="modules[]">
+        <!-- Options should be dynamically generated based on available modules -->
+    </select>
+</div>
+
+<!-- Student Attendance -->
+<div class="form-group">
+    <label for="attendance">Attendance Percentage</label>
+    <input type="text" class="form-control" id="attendance" name="attendance" placeholder="Enter Attendance Percentage">
+</div>
+
+<!-- Attendance Pie Chart -->
+<canvas id="attendanceChart"></canvas>
+<script>
+var ctx = document.getElementById('attendanceChart').getContext('2d');
+var attendanceChart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+        labels: ['Present', 'Absent', 'Authorised Absence'],
+        datasets: [{
+            label: 'Attendance',
+            data: [75, 20, 5],  // Example data
+            backgroundColor: ['green', 'red', 'blue'],
+        }]
+    },
+    options: {
+        responsive: true
+    }
+});
+</script>
+
