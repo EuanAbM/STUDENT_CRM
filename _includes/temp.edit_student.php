@@ -177,33 +177,33 @@ try {
         </div>
         <?php foreach ($emergencyContacts as $contact) : ?>
             <div class="col-md-4 content-area">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title"><?php echo htmlspecialchars($contact['relation']); ?></h5>
-                        <p class="card-text"><?php echo htmlspecialchars($contact['firstname'] . ' ' . $contact['lastname']); ?></p>
-                        <p class="card-text"><?php echo htmlspecialchars($contact['phone']); ?></p>
+                <form method="post" action="save_emergency_contact.php">
+                    <input type="hidden" name="contact_id" value="<?php echo $contact['id']; ?>">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label for="relation">Relation</label>
+                                <input type="text" class="form-control" name="relation" value="<?php echo htmlspecialchars($contact['relation']); ?>">
+                            </div>
+                            <div class="form-group">
+                                <label for="firstname">First Name</label>
+                                <input type="text" class="form-control" name="firstname" value="<?php echo htmlspecialchars($contact['firstname']); ?>">
+                            </div>
+                            <div class="form-group">
+                                <label for="lastname">Last Name</label>
+                                <input type="text" class="form-control" name="lastname" value="<?php echo htmlspecialchars($contact['lastname']); ?>">
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone</label>
+                                <input type="text" class="form-control" name="phone" value="<?php echo htmlspecialchars($contact['phone']); ?>">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Contact</button>
+                        </div>
                     </div>
-                </div>
+                </form>
             </div>
         <?php endforeach; ?>
     </div>
-
-    <!-- Attendance Record Section -->
-    <div class="row mt-5">
-        <div class="col-md-6">
-            <h4>Attendance Record</h4>
-            <form>
-                <div class="form-group">
-                    <label for="present">Present</label>
-                    <input type="text" class="form-control" id="present" name="present">
-                </div>
-                <div class="form-group">
-                    <label for="absent">Absent</label>
-                    <input type="text" class="form-control" id="absent" name="absent">
-                </div>
-                <div class="form-group">
-                    <label for="medical">Medical</label>
-                    <input type="text" class="form-control" id="medical" name="medical">
                 </div>
                 <button type="button" class="btn btn-primary" id="saveAttendance">Save Attendance</button>
                 <p id="attendancePercentage">The Student's attendance is currently 0%</p>
