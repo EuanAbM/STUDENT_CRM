@@ -23,12 +23,6 @@ $emergencyStmt->execute();
 $emergencyResult = $emergencyStmt->get_result();
 while ($contact = $emergencyResult->fetch_assoc()) {
     $emergencyContacts[] = $contact;
-
-
-
-
-
-    
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -101,10 +95,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             padding: 10px;
         }
         .student-image {
-    object-fit: contain; /* This will make sure the image is scaled while maintaining its aspect ratio */
-    width: 100%; /* This will make the image take the full width of its container */
-    height: auto; /* This will make the image height adjust automatically based on its width */
-}
+            object-fit: contain; /* This will make sure the image is scaled while maintaining its aspect ratio */
+            width: 100%; /* This will make the image take the full width of its container */
+            height: auto; /* This will make the image height adjust automatically based on its width */
+        }
+        .emergency-tile {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #efefef;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        .emergency-tile.empty {
+            background-color: #f9f9f9;
+        }
     </style>
 </head>
 <body>
@@ -136,7 +140,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <p>Placeholder text</p>
                     <label for="firstname">First Name</label>
                     <input type="text" class="form-control" id="firstname" name="firstname" value="<?php echo htmlspecialchars($student['firstname']); ?>">
-                    <label for="lastname">Last Name</label>
+                    <label for="lastname">Last Name</label
                     <input type="text" class="form-control" id="lastname" name="lastname" value="<?php echo htmlspecialchars($student['lastname']); ?>">
                     <label for="email">Email</label>
                     <input type="email" class="form-control" id="email" name="email" value="<?php echo htmlspecialchars($student['email']); ?>">
@@ -144,6 +148,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <input type="text" class="form-control" id="phone" name="phone" value="<?php echo htmlspecialchars($student['phone']); ?>">
                     <label for="password">Update Password</label>
                     <input type="password" class="form-control" id="password" name="password" placeholder="Enter new password or leave blank for no change">
+                    <label for="image">Upload Image</label>
+                    <input type="file" class="form-control" id="image" name="image">
                 </div>
                 <button type="submit" class="btn btn-primary">Update Profile</button>
             </form>
@@ -163,12 +169,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <input type="text" class="form-control" id="house" name="house" value="<?php echo htmlspecialchars($student['house']); ?>">
                     </div>
                     <div class="form-group col-md-6">
-                        <label for="town">Town</label
+                        <label for="town">Town</label>
                         <input type="text" class="form-control" id="town" name="town" value="<?php echo htmlspecialchars($student['town']); ?>">
                     </div>
                     <div class="form-group col-md-6">
                         <label for="county">County</label>
-                        <input type of="text" class="form-control" id="county" name="county" value="<?php echo htmlspecialchars($student['county']); ?>">
+                        <input type="text" class="form-control" id="county" name="county" value="<?php echo htmlspecialchars($student['county']); ?>">
                     </div>
                     <div class="form-group col-md-6">
                         <label for="country">Country</label>
@@ -191,26 +197,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="col-md-12 header-area">
             <h4>Emergency Contacts</h4>
         </div>
-        <?php foreach ($emergencyContacts as $contact) : ?>
-            <div class="col-md-4 content-area">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title"><?php echo htmlspecialchars($contact['relation']); ?></h5>
-                        <p class="card-text"><?php echo htmlspecialchars($contact['firstname'] . ' ' . $contact['lastname']); ?></p>
-                        <p class="card-text"><?php echo htmlspecialchars($contact['phone']); ?></p>
+        <?php
+        $maxContacts = 3;
+        $count = count($emergencyContacts);
+        for ($i = 0; $i < $maxContacts; $i++) :
+            if (isset($emergencyContacts[$i])) :
+                $contact = $emergencyContacts[$i];
+                ?>
+                <div class="col-md-4 content-area">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title"><?php echo htmlspecialchars($contact['relation']); ?></h5>
+                            <p class="card-text"><?php echo htmlspecialchars($contact['firstname'] . ' ' . $contact['lastname']); ?></p>
+                            <p class="card-text"><?php echo htmlspecialchars($contact['phone']); ?></p>
+                            <a href="edit_emergency_contact.php?contactid=<?php echo $contact['id']; ?>" class="btn btn-primary">Edit Contact</a>
+                        </div>
                     </div>
                 </div>
-            </div>
-        <?php endforeach; ?>
+            <?php else : ?>
+                <div class="col-md-4 content-area">
+                    <div class="emergency-tile empty">
+                        <p>No contact here. <a href="add_emergency_contact.php?studentid=<?php echo $studentId; ?>">Add one?</a></p>
+                    </div>
+                </div>
+            <?php endif;
+        endfor;
+        ?>
     </div>
 
-<!-- Modules Section -->
-<div class="row mt-5">
-    <div class="col-md-12 header-area">
-        <h4>Modules</h4>
-        <!-- Add your modules content here -->
-    </div>
-</div>
+    <!-- Bootstrap JS and jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+
 
 <!-- Attendance Record Section -->
 
@@ -291,10 +311,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </html>
 
 
-    <!-- Additional sections can be added here -->
 
-    <!-- Bootstrap JS and jQuery -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</body>
 </html>
