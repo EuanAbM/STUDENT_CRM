@@ -47,11 +47,10 @@
             max-height: 100vh;
             margin: auto;
         }
-.table-responsive {
-    max-height: 75vh;
-    overflow-y: auto;
-}
-
+        .table-responsive {
+            max-height: 75vh;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
@@ -63,7 +62,7 @@
     </div>
     <form method="get" action="">
         <div class="form-group">
-<input type="text" name="search" class="form-control" placeholder="Search by ID, first name, last name, or postcode">
+            <input type="text" name="search" class="form-control" placeholder="Search by ID, first name, last name, or postcode">
         </div>
         <button type="submit" class="btn btn-primary mb-3">Search</button>
     </form>
@@ -125,6 +124,8 @@ $result = mysqli_query($conn, $sql);
                         <th scope="col">County</th>
                         <th scope="col">Country</th>
                         <th scope="col">Postcode</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Phone</th>
                         <th scope="col">Password</th>
                         <th scope="col">Actions</th> <!-- New column for actions -->
                     </tr>
@@ -144,8 +145,16 @@ $result = mysqli_query($conn, $sql);
                         echo '<td>' . $row['house'] . '</td>';
                         echo '<td>' . $row['town'] . '</td>';
                         echo '<td>' . $row['county'] . '</td>';
-                        echo '<td>' . $row['country'] . ' <span class="flag-icon flag-icon-' . strtolower($row['country']) . '"></span></td>';
+                        echo '<td>' . $row['country'];
+                        if ($row['country'] == 'Great Britain') {
+                            echo ' <span class="flag-icon flag-icon-gb"></span>';
+                        } else {
+                            echo ' <span class="flag-icon flag-icon-' . strtolower($row['country']) . '"></span>';
+                        }
+                        echo '</td>';
                         echo '<td>' . $row['postcode'] . '</td>';
+                        echo '<td>' . $row['email'] . '</td>';
+                        echo '<td>' . $row['phone'] . '</td>';
                         echo '<td class="password">' . $row['password'] . '<i class="fas fa-copy copy-icon" data-password="' . $row['password'] . '"></i></td>';
                         echo '<td>';
                         echo '<a href="edit_student.php?id=' . $row['studentid'] . '" class="btn btn-primary btn-sm mr-2">Edit</a>'; // Edit button
@@ -156,21 +165,21 @@ $result = mysqli_query($conn, $sql);
                     ?>
                 </tbody>
             </table>
-<script>
-$(document).ready(function() {
-    $('#search').keyup(function() {
-        var searchText = $(this).val();
-        $.ajax({
-            url: '_includes/search.php',
-            method: 'POST',
-            data: {search: searchText},
-            success: function(data) {
-                $('#tableData').html(data);
-            }
-        });
-    });
-});
-</script>
+            <script>
+                $(document).ready(function() {
+                    $('#search').keyup(function() {
+                        var searchText = $(this).val();
+                        $.ajax({
+                            url: '_includes/search.php',
+                            method: 'POST',
+                            data: {search: searchText},
+                            success: function(data) {
+                                $('#tableData').html(data);
+                            }
+                        });
+                    });
+                });
+            </script>
 
         </div>
         <button type="submit" name="delete" class="btn btn-danger mb-3">Delete Selected</button>
