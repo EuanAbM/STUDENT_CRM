@@ -1,53 +1,61 @@
 <?php
 require 'dbconnect.inc';
 
-$studentId = $_GET['id'];
+$studentId = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT);
 
-// Initialize variables for form submission
-$firstname = $lastname = $dob = $house = $town = $county = $country = $postcode = $password = '';
-$image = '';
 
-// Fetch student data
-$sql = "SELECT * FROM student WHERE studentid = $studentId";
-$result = mysqli_query($conn, $sql);
-$student = mysqli_fetch_assoc($result);
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Prepare and execute select statement
+$stmt = $conn->prepare("SELECT * FROM student WHERE studentid = ?");
+$stmt->bind_param("i", $studentId);
+$stmt->execute();
+$result = $stmt->get_result();
+$student = $result->fetch_assoc();
 
 // Fetch emergency contacts for the student
 $emergencyContacts = [];
-$emergencySql = "SELECT * FROM emergency_details WHERE studentid = $studentId";
-$emergencyResult = mysqli_query($conn, $emergencySql);
-while ($contact = mysqli_fetch_assoc($emergencyResult)) {
+$emergencyStmt = $conn->prepare("SELECT * FROM emergency_details WHERE studentid = ?");
+$emergencyStmt->bind_param("i", $studentId);
+$emergencyStmt->execute();
+$emergencyResult = $emergencyStmt->get_result();
+while ($contact = $emergencyResult->fetch_assoc()) {
     $emergencyContacts[] = $contact;
 }
 
-// Check if form is submitted for updating student
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Sanitize input data
-    $firstname = mysqli_real_escape_string($conn, $_POST['firstname']);
-    $lastname = mysqli_real_escape_string($conn, $_POST['lastname']);
-    $dob = mysqli_real_escape_string($conn, $_POST['dob']);
-    $house = mysqli_real_escape_string($conn, $_POST['house']);
-    $town = mysqli_real_escape_string($conn, $_POST['town']);
-    $county = mysqli_real_escape_string($conn, $_POST['county']);
-    $country = mysqli_real_escape_string($conn, $_POST['country']);
-    $postcode = mysqli_real_escape_string($conn, $_POST['postcode']);
-    $password = mysqli_real_escape_string($conn, $_POST['password']);
+    // Sanitize and prepare data
+    $firstname = filter_input(INPUT_POST, 'firstname', FILTER_SANITIZE_STRING);
+    $lastname = filter_input(INPUT_POST, 'lastname', FILTER_SANITIZE_STRING);
+    $dob = filter_input(INPUT_POST, 'dob', FILTER_SANITIZE_STRING);
+    $house = filter_input(INPUT_POST, 'house', FILTER_SANITIZE_STRING);
+    $town = filter_input(INPUT_POST, 'town', FILTER_SANITIZE_STRING);
+    $county = filter_input(INPUT_POST, 'county', FILTER_SANITIZE_STRING);
+    $country = filter_input(INPUT_POST, 'country', FILTER_SANITIZE_STRING);
+    $postcode = filter_input(INPUT_POST, 'postcode', FILTER_SANITIZE_STRING);
+    $password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_STRING);
+    $image = $student['image']; // Default to current image
 
     // Handle image upload
     if ($_FILES['image']['error'] == 0) {
         $image = 'uploads/' . basename($_FILES['image']['name']);
         move_uploaded_file($_FILES['image']['tmp_name'], $image);
-    } else {
-        $image = $student['image'];
     }
 
-    // Update student data
-    $sql = "UPDATE student SET firstname = '$firstname', lastname = '$lastname', dob = '$dob', house = '$house', town = '$town', county = '$county', country = '$country', postcode = '$postcode', image = '$image' WHERE studentid = $studentId";
+    // Prepare and execute update statement
+    $updateStmt = $conn->prepare("UPDATE student SET firstname=?, lastname=?, dob=?, house=?, town=?, county=?, country=?, postcode=?, image=? WHERE studentid=?");
+    $updateStmt->bind_param("sssssssssi", $firstname, $lastname, $dob, $house, $town, $county, $country, $postcode, $image, $studentId);
+    $updateStmt->execute();
+
     if (!empty($password)) {
         $password = password_hash($password, PASSWORD_DEFAULT);
-        $sql = "UPDATE student SET password = '$password' WHERE studentid = $studentId";
+        $passwordStmt = $conn->prepare("UPDATE student SET password=? WHERE studentid=?");
+        $passwordStmt->bind_param("si", $password, $studentId);
+        $passwordStmt->execute();
     }
-    mysqli_query($conn, $sql);
 
     // Redirect back to students page
     header('Location: students.php');
