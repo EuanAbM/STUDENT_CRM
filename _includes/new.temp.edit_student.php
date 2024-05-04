@@ -51,6 +51,23 @@ $updateStmt = $conn->prepare("UPDATE student SET firstname=?, lastname=?, dob=?,
 $updateStmt->bind_param("sssssssssssi", $firstname, $lastname, $dob, $house, $town, $county, $country, $postcode, $image, $email, $phone, $studentId);
 $updateStmt->execute();
 
+
+// ...
+
+// Check if the id key is present in the $_POST array
+if (!isset($_POST['studentid'])) {
+    die('Student ID not provided');
+}
+
+$studentId = $_POST['studentid'];
+
+// ...
+
+// Prepare and execute update statement
+$updateStmt = $conn->prepare("UPDATE student SET firstname=?, lastname=?, dob=?, house=?, town=?, county=?, country=?, postcode=?, image=?, email=?, phone=? WHERE studentid=?");
+$updateStmt->bind_param("sssssssssssi", $firstname, $lastname, $dob, $house, $town, $county, $country, $postcode, $image, $email, $phone, $studentId);
+$updateStmt->execute();
+
 // ...
 
 $sql = "UPDATE students SET ";
@@ -67,6 +84,26 @@ if (!empty($_POST['email'])) {
     $types .= 's';
     $values[] = $_POST['email'];
 }
+// ... repeat for other fields ...
+$sql = rtrim($sql, ', ');  // remove trailing comma
+$sql .= " WHERE studentid = ?";
+
+$types .= 'i';
+$values[] = $studentId;
+
+$stmt = $conn->prepare($sql);
+if ($stmt === false) {
+    die('Failed to prepare SQL statement');
+}
+$stmt->bind_param($types, ...$values);
+$stmt->execute();  // Execute the statement
+
+// ...
+
+
+
+
+
 // ... repeat for other fields ...
 $sql = rtrim($sql, ', ');  // remove trailing comma
 $sql .= " WHERE id = ?";
@@ -267,9 +304,8 @@ $stmt->execute();  // Execute the statement
 
 
 
+
 <!-- Attendance Record Section -->
-
-
 <div class="row mt-5">
     <div class="col-md-6">
         <h4>Attendance Record</h4>
@@ -321,6 +357,31 @@ $stmt->execute();  // Execute the statement
         }
     });
 
+// Add event listener to the save attendance button
+document.getElementById('saveAttendance').addEventListener('click', function() {
+    var present = document.getElementById('present').value || 0;
+    var absent = document.getElementById('absent').value || 0;
+    var medical = document.getElementById('medical').value || 0;
+
+    // Send AJAX request to update attendance data in the database
+    $.ajax({
+        url: 'save_attendance.php', // Replace with the correct URL to your server-side script
+        method: 'POST',
+        data: {
+            present: present,
+            absent: absent,
+            medical: medical,
+            studentId: <?php echo $studentId; ?> // Pass the student ID to the server-side script
+        },
+        success: function(response) {
+            console.log(response); // Log the server's response to the console
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
+        }
+    });
+});
+
     // Add event listeners to the input fields
     document.getElementById('present').addEventListener('input', updateChart);
     document.getElementById('absent').addEventListener('input', updateChart);
@@ -341,6 +402,36 @@ $stmt->execute();  // Execute the statement
         var percentage = total > 0 ? Math.round((present / total) * 100) : 0;
         document.getElementById('attendancePercentage').textContent = "The Student's attendance is currently " + percentage + "%";
     }
+
+    $(document).ready(function() {
+    $('#saveAttendance').click(function() {
+        // Get the student ID from the URL
+        var urlParams = new URLSearchParams(window.location.search);
+        var studentId = urlParams.get('id');
+
+        // Get the attendance data from the form
+        var present = $('#present').val();
+        var absent = $('#absent').val();
+        var medical = $('#medical').val();
+
+        // Send the AJAX request
+        $.ajax({
+            url: 'save_attendance.php',
+            type: 'POST',
+            data: {
+                present: present,
+                absent: absent,
+                medical: medical,
+                studentId: studentId // Include the student ID in the AJAX data
+            },
+            success: function(response) {
+                // Handle the response from the server
+                console.log(response);
+            }
+        });
+    });
+});
+
 </script>
 </body>
 </html>
