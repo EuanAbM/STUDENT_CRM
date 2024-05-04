@@ -1,9 +1,18 @@
 <?php
 session_start();
 
+var_dump($_POST);
+
 // Include database connection
-require '../_includes/dbconnect.inc';
+require 'dbconnect.inc';
 $studentId = $_SESSION['studentId'];
+
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+
 
 // Verify if student exists with the provided studentId
 $checkStudentSql = "SELECT * FROM student WHERE studentid = '$studentId'";

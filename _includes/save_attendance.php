@@ -1,5 +1,5 @@
 <?php
-require 'dbconnect.inc';
+require '../_includes/dbconnect.inc';
 
 if(isset($_POST['present']) && isset($_POST['absent']) && isset($_POST['medical']) && isset($_POST['studentId'])) {
     $present = (int)$_POST['present'];

@@ -218,8 +218,90 @@ echo "<img src='{$image_path}' alt='Student Images' style='border-radius: 50%; f
                     <hr>
 
                     <!-- Recent Grades and Assignments Display -->
-                    <h5>Recent Grades</h5>
-                    <p>No grades available.</p>
+                    
+               
+
+
+
+                    <h5>Attendance</h5>
+<?php
+    // Assuming you have a connection to your database in a variable called $conn
+    if(isset($studentId)) { // Check if studentId is set
+        $sql = "SELECT * FROM attendance WHERE studentid = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $studentId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result && $result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            $present = $row["present"];
+            $absent = $row["absent"];
+            $medical = $row["medical"];
+        } else {
+            echo "<p>No attendance data available.</p>";
+        }
+    } else {
+        echo "<p>Student ID not found.</p>";
+    }
+?>
+
+<div class="row mt-5">
+    <div class="col-md-6">
+    <h4>Attendance Record</h4>
+<div class="form-group">
+    <label for="present">Present</label>
+    <p id="present"><?php echo $present; ?></p>
+</div>
+<div class="form-group">
+    <label for="absent">Absent</label>
+    <p id="absent"><?php echo $absent; ?></p>
+</div>
+<div class="form-group">
+    <label for="medical">Medical</label>
+    <p id="medical"><?php echo $medical; ?></p>
+</div>
+<p id="attendancePercentage">Your Attendance is <?php echo round(($present / ($present + $absent + $medical)) * 100); ?>%</p>
+</div>
+<div class="col-md-6">
+    <canvas id="attendanceChart" style="max-width: 300px;"></canvas>
+</div>
+</div>
+
+<!-- Bootstrap JS and jQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    var ctx = document.getElementById('attendanceChart').getContext('2d');
+    var chart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Present', 'Absent', 'Medical'],
+            datasets: [{
+                data: [<?php echo $present; ?>, <?php echo $absent; ?>, <?php echo $medical; ?>],
+                backgroundColor: ['green', 'red', 'blue']
+            }]
+        },
+        options: {
+            responsive: true,
+            title: {
+                display: true,
+                text: 'Attendance Record'
+            }
+        }
+    });
+</script>
+
+
+
+
+
+
+
+
 
                     <hr>
 
@@ -231,8 +313,4 @@ echo "<img src='{$image_path}' alt='Student Images' style='border-radius: 50%; f
     </div>
 </div>
 
-<!-- Bootstrap JS and jQuery (place before </body>) -->
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</body>
-</html>
+
