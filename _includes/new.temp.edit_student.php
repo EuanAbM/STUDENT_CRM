@@ -403,13 +403,13 @@ document.getElementById('saveAttendance').addEventListener('click', function() {
         document.getElementById('attendancePercentage').textContent = "The Student's attendance is currently " + percentage + "%";
     }
 
-    $(document).ready(function() {
+$(document).ready(function() {
     $('#saveAttendance').click(function() {
-        // Get the student ID from the URL
+        // Extract student ID from URL parameters
         var urlParams = new URLSearchParams(window.location.search);
         var studentId = urlParams.get('id');
 
-        // Get the attendance data from the form
+        // Get attendance values from form inputs
         var present = $('#present').val();
         var absent = $('#absent').val();
         var medical = $('#medical').val();
@@ -422,7 +422,7 @@ document.getElementById('saveAttendance').addEventListener('click', function() {
                 present: present,
                 absent: absent,
                 medical: medical,
-                studentId: studentId // Include the student ID in the AJAX data
+                studentId: studentId
             },
             success: function(response) {
                 // Handle the response from the server
