@@ -17,24 +17,22 @@ if (mysqli_num_rows($studentResult) == 0) {
 if (isset($_POST['emergency_contacts']) && is_array($_POST['emergency_contacts'])) {
     $emergencyContacts = $_POST['emergency_contacts'];
 
-    // Iterate through emergency contacts and insert into database
-    foreach ($emergencyContacts as $contact) {
+    // Iterate through emergency contacts and update in database
+    foreach ($emergencyContacts as $index => $contact) {
+        $contactId = mysqli_real_escape_string($conn, $contact['id']);
         $contactType = mysqli_real_escape_string($conn, $contact['type']);
         $firstName = mysqli_real_escape_string($conn, $contact['first_name']);
         $lastName = mysqli_real_escape_string($conn, $contact['last_name']);
         $phoneNumber = mysqli_real_escape_string($conn, $contact['phone']);
 
-        // Construct and execute SQL query to insert emergency contact
-        $insertContactSql = "INSERT INTO emergency_contacts (studentid, type, first_name, last_name, phone_number)
-                             VALUES ('$studentId', '$contactType', '$firstName', '$lastName', '$phoneNumber')";
-
-        $result = mysqli_query($conn, $insertContactSql);
+        // Update the emergency contact
+        $updateContactSql = "UPDATE emergency_contacts SET type='$contactType', first_name='$firstName', last_name='$lastName', phone_number='$phoneNumber' WHERE id='$contactId' AND studentid='$studentId'";
+        $result = mysqli_query($conn, $updateContactSql);
 
         if (!$result) {
-            die("Error inserting emergency contact: " . mysqli_error($conn));
+            die("Error updating emergency contact: " + mysqli_error($conn));
         }
     }
-} else {
     echo "No emergency contacts data received.";
 }
 
