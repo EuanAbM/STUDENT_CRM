@@ -2,14 +2,24 @@
 require 'dbconnect.inc';
 
 if(isset($_POST['present']) && isset($_POST['absent']) && isset($_POST['medical']) && isset($_POST['studentId'])) {
-    $present = $_POST['present'];
-    $absent = $_POST['absent'];
-    $medical = $_POST['medical'];
-    $studentId = $_POST['studentId']; // Get the student ID from the POST data
+    $present = (int)$_POST['present'];
+    $absent = (int)$_POST['absent'];
+    $medical = (int)$_POST['medical'];
+    $studentId = $conn->real_escape_string($_POST['studentId']); // Sanitize the studentId
 
     error_log("Received data: present = $present, absent = $absent, medical = $medical, studentId = $studentId");
 
-    $sql = "UPDATE attendance SET present = '$present', absent = '$absent', medical = '$medical' WHERE studentid = '$studentId'";
+    // Check if studentId exists in the database
+    $checkSql = "SELECT COUNT(*) FROM attendance WHERE studentid = '$studentId'";
+    $result = $conn->query($checkSql);
+    $count = $result->fetch_row()[0];
+
+    if ($count == 0) {
+        echo "No student found with ID: $studentId. Please check the student ID.";
+        exit;
+    }
+
+    $sql = "UPDATE attendance SET present = $present, absent = $absent, medical = $medical WHERE studentid = '$studentId'";
     if ($conn->query($sql) === TRUE) {
         if ($conn->affected_rows > 0) {
             error_log("Attendance data updated successfully for studentId = $studentId");
