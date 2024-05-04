@@ -26,40 +26,47 @@ while ($contact = $emergencyResult->fetch_assoc()) {
     $emergencyContacts[] = $contact;
 }
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Sanitize and prepare data
-    $firstname = filter_input(INPUT_POST, 'firstname', FILTER_SANITIZE_STRING);
-    $lastname = filter_input(INPUT_POST, 'lastname', FILTER_SANITIZE_STRING);
-    $dob = filter_input(INPUT_POST, 'dob', FILTER_SANITIZE_STRING);
-    $house = filter_input(INPUT_POST, 'house', FILTER_SANITIZE_STRING);
-    $town = filter_input(INPUT_POST, 'town', FILTER_SANITIZE_STRING);
-    $county = filter_input(INPUT_POST, 'county', FILTER_SANITIZE_STRING);
-    $country = filter_input(INPUT_POST, 'country', FILTER_SANITIZE_STRING);
-    $postcode = filter_input(INPUT_POST, 'postcode', FILTER_SANITIZE_STRING);
-    $password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_STRING);
-    $image = $student['image']; // Default to current image
+    // Initialize an array to hold the SQL parameters
+    $params = [];
+    $sql = "UPDATE student SET ";
 
-    // Handle image upload
-    if ($_FILES['image']['error'] == 0) {
+    // Check each field and add to SQL query if it has been provided
+    if (isset($_POST['firstname'])) {
+        $sql .= "firstname=?, ";
+        $params[] = filter_input(INPUT_POST, 'firstname', FILTER_SANITIZE_STRING);
+    }
+    if (isset($_POST['lastname'])) {
+        $sql .= "lastname=?, ";
+        $params[] = filter_input(INPUT_POST, 'lastname', FILTER_SANITIZE_STRING);
+    }
+    if (isset($_POST['dob'])) {
+        $sql .= "dob=?, ";
+        $params[] = filter_input(INPUT_POST, 'dob', FILTER_SANITIZE_STRING);
+    }
+    // Continue this pattern for each field
+
+    // Handle image separately as it may involve file upload logic
+    $image = $student['image']; // Default to current image
+    if (isset($_FILES['image']['error']) && $_FILES['image']['error'] == 0) {
         $image = 'uploads/' . basename($_FILES['image']['name']);
         move_uploaded_file($_FILES['image']['tmp_name'], $image);
     }
+    $sql .= "image=?, ";
+    $params[] = $image;
 
-    // Prepare and execute update statement
-    $updateStmt = $conn->prepare("UPDATE student SET firstname=?, lastname=?, dob=?, house=?, town=?, county=?, country=?, postcode=?, image=? WHERE studentid=?");
-    $updateStmt->bind_param("sssssssssi", $firstname, $lastname, $dob, $house, $town, $county, $country, $postcode, $image, $studentId);
+    // Finalize the SQL statement
+    $sql .= "WHERE studentid=?";
+    $params[] = $studentId;
+
+    // Prepare and execute the SQL statement with the parameters
+    $updateStmt = $conn->prepare($sql);
+    $updateStmt->bind_param(str_repeat("s", count($params)), ...$params);
     $updateStmt->execute();
 
-    if (!empty($password)) {
-        $password = password_hash($password, PASSWORD_DEFAULT);
-        $passwordStmt = $conn->prepare("UPDATE student SET password=? WHERE studentid=?");
-        $passwordStmt->bind_param("si", $password, $studentId);
-        $passwordStmt->execute();
-    }
-
-    // Redirect back to students page
+    // Redirect after update
     header('Location: students.php');
     exit;
+
 }
 
 ?>
