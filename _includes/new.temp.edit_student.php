@@ -3,7 +3,7 @@ require 'dbconnect.inc';
 $studentId = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT);
 
 // Query to fetch existing attendance data if present
-$attendanceQuery = $conn->prepare("SELECT present, absent, medical FROM attendance WHERE studentid = ?");
+$attendanceQuery = $conn's.prepare("SELECT present, absent, medical FROM attendance WHERE studentid = ?");
 $attendanceQuery->bind_param("s", $studentId);
 $attendanceQuery->execute();
 $attendanceResult = $attendanceQuery->get_result();
@@ -48,11 +48,3 @@ $conn->close();
     <button type="submit">Save Attendance</button>
 </form>
 
-
-</script>
-</body>
-</html>
-
-
-
-</html>
