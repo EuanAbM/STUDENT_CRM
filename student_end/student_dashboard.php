@@ -17,6 +17,53 @@ $result = mysqli_query($conn, $sql);
 $student = mysqli_fetch_assoc($result);
 
 
+
+
+
+// Fetch student information
+$sql = "SELECT * FROM student WHERE studentid = ?";
+$stmt = $conn->prepare($sql);
+
+if ($stmt === false) {
+    die('prepare() failed: ' . htmlspecialchars($conn->error));
+}
+
+$stmt->bind_param("i", $studentId);
+$stmt->execute();
+$result = $stmt->get_result();
+$student = $result->fetch_assoc();
+
+$image_name = $student['image'];
+
+// Now you have the image name, you can create the path to the image
+$image_path = "/PHP_STUDENT_CRM/STUDENT_CRM/_includes/" . $image_name;
+
+
+
+// Fetch emergency details for the student
+$emergencyDetails = [];
+$getDetailsSql = "SELECT * FROM emergency_details WHERE studentid = ? ORDER BY contact_order ASC";
+$detailsStmt = $conn->prepare($getDetailsSql);
+
+if ($detailsStmt === false) {
+    die('prepare() failed: ' . htmlspecialchars($conn->error));
+}
+
+$detailsStmt->bind_param("i", $studentId);
+$detailsStmt->execute();
+$detailsResult = $detailsStmt->get_result();
+
+while ($detail = $detailsResult->fetch_assoc()) {
+    $emergencyDetails[] = $detail;
+}
+
+
+
+
+
+
+
+
 // Fetch emergency details for the student
 $emergencyDetails = [];
 $getDetailsSql = "SELECT * FROM emergency_details WHERE studentid = '$studentId' ORDER BY contact_order ASC";
@@ -89,21 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['emergency'])) {
                 <div class="card-header">
                     
 
-
-                <div class="student-photo">
-    <!-- Student Image -->
-    <?php 
-    if (isset($student['image_path'])): 
-        $image_path = $_SERVER['DOCUMENT_ROOT'] . '/_includes/uploads/' . $student['image_path'];
-        if (file_exists($image_path)): ?>
-            <img src="<?php echo '/_includes/uploads/' . $student['image_path']; ?>" alt="Student Image">
-        <?php else: ?>
-            <p>Image not found</p>
-        <?php endif; ?>
-    <?php else: ?>
-        <p>Image not found</p>
-    <?php endif; ?>
-</div>
+                
 
 
 
@@ -113,11 +146,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['emergency'])) {
                 <div class="card-body">
                     <!-- Student Information -->
                     <h5>Student Information</h5>
+                    <?php
+echo "<img src='{$image_path}' alt='Student Images' style='border-radius: 50%; float: right; width: 150px; height: 150px;'>";
+?>
                     <p><strong>Student ID:</strong> <?php echo $student['studentid']; ?></p>
                     <p><strong>Name:</strong> <?php echo $student['firstname'] . ' ' . $student['lastname']; ?></p>
                     <p><strong>Date of Birth:</strong> <?php echo $student['dob']; ?></p>
                     <p><strong>Address:</strong> <?php echo $student['house'] . ', ' . $student['town'] . ', ' . $student['county'] . ', ' . $student['postcode'] . ', ' . $student['country']; ?></p>
-
+                    
                     <hr>
 
                     <!-- Update Password Form -->

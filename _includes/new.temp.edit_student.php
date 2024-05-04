@@ -3,7 +3,6 @@ require 'dbconnect.inc';
 
 $studentId = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT);
 
-
 // Check connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
@@ -16,6 +15,8 @@ $stmt->execute();
 $result = $stmt->get_result();
 $student = $result->fetch_assoc();
 
+
+
 // Fetch emergency contacts for the student
 $emergencyContacts = [];
 $emergencyStmt = $conn->prepare("SELECT * FROM emergency_details WHERE studentid = ?");
@@ -26,46 +27,162 @@ while ($contact = $emergencyResult->fetch_assoc()) {
     $emergencyContacts[] = $contact;
 }
 
-    // Initialize an array to hold the SQL parameters
-    $params = [];
-    $sql = "UPDATE student SET ";
-
-    // Check each field and add to SQL query if it has been provided
-    if (isset($_POST['firstname'])) {
-        $sql .= "firstname=?, ";
-        $params[] = filter_input(INPUT_POST, 'firstname', FILTER_SANITIZE_STRING);
-    }
-    if (isset($_POST['lastname'])) {
-        $sql .= "lastname=?, ";
-        $params[] = filter_input(INPUT_POST, 'lastname', FILTER_SANITIZE_STRING);
-    }
-    if (isset($_POST['dob'])) {
-        $sql .= "dob=?, ";
-        $params[] = filter_input(INPUT_POST, 'dob', FILTER_SANITIZE_STRING);
-    }
-    // Continue this pattern for each field
-
-    // Handle image separately as it may involve file upload logic
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Sanitize and prepare data
+    $firstname = filter_input(INPUT_POST, 'firstname', FILTER_SANITIZE_STRING);
+    $lastname = filter_input(INPUT_POST, 'lastname', FILTER_SANITIZE_STRING);
+    $dob = filter_input(INPUT_POST, 'dob', FILTER_SANITIZE_STRING);
+    $house = filter_input(INPUT_POST, 'house', FILTER_SANITIZE_STRING);
+    $town = filter_input(INPUT_POST, 'town', FILTER_SANITIZE_STRING);
+    $county = filter_input(INPUT_POST, 'county', FILTER_SANITIZE_STRING);
+    $country = filter_input(INPUT_POST, 'country', FILTER_SANITIZE_STRING);
+    $postcode = filter_input(INPUT_POST, 'postcode', FILTER_SANITIZE_STRING);
+    $password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_STRING);
     $image = $student['image']; // Default to current image
-    if (isset($_FILES['image']['error']) && $_FILES['image']['error'] == 0) {
+
+    // Handle image upload
+    if ($_FILES['image']['error'] == 0) {
         $image = 'uploads/' . basename($_FILES['image']['name']);
         move_uploaded_file($_FILES['image']['tmp_name'], $image);
     }
-    $sql .= "image=?, ";
-    $params[] = $image;
 
-    // Finalize the SQL statement
-    $sql .= "WHERE studentid=?";
-    $params[] = $studentId;
+    // Prepare and execute update statement
+    
+// Prepare and execute update statement
+$updateStmt = $conn->prepare("UPDATE student SET firstname=?, lastname=?, dob=?, house=?, town=?, county=?, country=?, postcode=?, image=?, email=?, phone=? WHERE studentid=?");
+$updateStmt->bind_param("sssssssssssi", $firstname, $lastname, $dob, $house, $town, $county, $country, $postcode, $image, $email, $phone, $studentId);
+$updateStmt->execute();
 
-    // Prepare and execute the SQL statement with the parameters
-    $updateStmt = $conn->prepare($sql);
-    $updateStmt->bind_param(str_repeat("s", count($params)), ...$params);
-    $updateStmt->execute();
 
-    // Redirect after update
-    header('Location: students.php');
-    exit;
+if (!isset($_GET['id'])) {
+    die('Student ID not provided');
+}
+
+$studentId = $_GET['id'];
+
+// ...
+
+// Prepare and execute update statement
+$updateStmt = $conn->prepare("UPDATE student SET firstname=?, lastname=?, dob=?, house=?, town=?, county=?, country=?, postcode=?, image=?, email=?, phone=? WHERE studentid=?");
+$updateStmt->bind_param("sssssssssssi", $firstname, $lastname, $dob, $house, $town, $county, $country, $postcode, $image, $email, $phone, $studentId);
+$updateStmt->execute();
+
+// ...
+
+$sql = "UPDATE students SET ";
+$types = '';
+$values = [];
+
+if (!empty($_POST['lastname'])) {
+    $sql .= "lastname = ?, ";
+    $types .= 's';
+    $values[] = $_POST['lastname'];
+}
+if (!empty($_POST['email'])) {
+    $sql .= "email = ?, ";
+    $types .= 's';
+    $values[] = $_POST['email'];
+}
+// ... repeat for other fields ...
+$sql = rtrim($sql, ', ');  // remove trailing comma
+$sql .= " WHERE studentid = ?";
+
+$types .= 'i';
+$values[] = $studentId;
+
+$stmt = $conn->prepare($sql);
+
+
+
+if (!isset($_POST['studentid'])) {
+    die('Student ID not provided');
+}
+$studentId = $_POST['studentid'];
+
+
+
+
+
+
+
+// Check if the id key is present in the $_POST array
+if (!isset($_POST['studentid'])) {
+    die('Student ID not provided');
+}
+
+$studentId = $_POST['studentid'];
+
+// ...
+
+// Prepare and execute update statement
+$updateStmt = $conn->prepare("UPDATE student SET firstname=?, lastname=?, dob=?, house=?, town=?, county=?, country=?, postcode=?, image=?, email=?, phone=? WHERE studentid=?");
+$updateStmt->bind_param("sssssssssssi", $firstname, $lastname, $dob, $house, $town, $county, $country, $postcode, $image, $email, $phone, $studentId);
+$updateStmt->execute();
+
+// ...
+
+// Check if the id key is present in the $_GET array
+if (!isset($_GET['studentid'])) {
+    die('Student ID not provided');
+}
+
+$studentId = $_GET['studentid'];
+
+$sql = "UPDATE students SET ";
+$types = '';
+$values = [];
+
+if (!empty($_POST['lastname'])) {
+    $sql .= "lastname = ?, ";
+    $types .= 's';
+    $values[] = $_POST['lastname'];
+}
+if (!empty($_POST['email'])) {
+    $sql .= "email = ?, ";
+    $types .= 's';
+    $values[] = $_POST['email'];
+}
+// ... repeat for other fields ...
+$sql = rtrim($sql, ', ');  // remove trailing comma
+$sql .= " WHERE studentid = ?";
+
+$types .= 'i';
+$values[] = $studentId;
+
+$stmt = $conn->prepare($sql);
+if ($stmt === false) {
+    die('Failed to prepare SQL statement');
+}
+$stmt->bind_param($types, ...$values);
+$stmt->execute();  // Execute the statement
+
+// ...
+
+
+
+
+
+// ... repeat for other fields ...
+$sql = rtrim($sql, ', ');  // remove trailing comma
+$sql .= " WHERE id = ?";
+
+$types .= 'i';
+$values[] = $_POST['id'];  // Assuming the form also includes a hidden field with the student ID
+
+$stmt = $conn->prepare($sql);
+$stmt->bind_param($types, ...$values);
+$stmt->execute();  // Execute the statement
+
+    if (!empty($password)) {
+        $password = password_hash($password, PASSWORD_DEFAULT);
+        $passwordStmt = $conn->prepare("UPDATE student SET password=? WHERE studentid=?");
+        $passwordStmt->bind_param("si", $password, $studentId);
+        $passwordStmt->execute();
+    }
+
+
+
+
 
 }
 
