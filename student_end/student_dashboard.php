@@ -356,75 +356,65 @@ echo "<img src='{$image_path}' alt='Student Images' style='border-radius: 50%; f
 <?php
 echo "<h2>Student Emergency</h2>";
 
-// Assuming $studentId is fetched from a session or a safe source and is validated
-if (!isset($studentId)) {
+// Ensure $studentId is obtained correctly from session or a valid source
+if (!isset($_SESSION['studentId'])) {
     die("Student ID is not set.");
 }
+$studentId = $_SESSION['studentId'];
 
-// Assuming $emergencyDetails is fetched from the database based on the student ID
-if (empty($emergencyDetails)) {
-    echo "No emergency details found. Please update as a matter of urgency.";
-    echo "<form method='POST' action=''>
-        <label for='relation'>Relation:</label><br>
-        <input type='text' id='relation' name='relation'><br>
-        <label for='first_name'>First Name:</label><br>
-        <input type='text' id='first_name' name='first_name'><br>
-        <label for='last_name'>Last Name:</label><br>
-        <input type='text' id='last_name' name='last_name'><br>
-        <label for='phone'>Phone:</label><br>
-        <input type='text' id='phone' name='phone'><br>
-        <input type='hidden' name='studentId' value='$studentId'>
-        <input type='submit' value='Submit'>
-        </form>";
-} else {
-    $emergencyDetail = $emergencyDetails[0];
-    echo "<form method='POST' action=''>
-        <label for='relation'>Relation:</label><br>
-        <input type='text' id='relation' name='relation' value='{$emergencyDetail['relation']}'><br>
-        <label for='first_name'>First Name:</label><br>
-        <input type='text' id='first_name' name='first_name' value='".(isset($emergencyDetail['first_name']) ? $emergencyDetail['first_name'] : '')."'><br>
-        <label for='last_name'>Last Name:</label><br>
-        <input type='text' id='last_name' name='last_name' value='".(isset($emergencyDetail['last_name']) ? $emergencyDetail['last_name'] : '')."'><br>
-        <label for='phone'>Phone:</label><br>
-        <input type='text' id='phone' name='phone' value='{$emergencyDetail['phone']}'><br>
-        <input type='hidden' name='studentId' value='$studentId'>
-        <input type='submit' value='Update'>
-    </form>";
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
 }
 
-// Handle form submission
+// Fetch existing emergency details
+$stmt = $conn->prepare("SELECT * FROM student_emergency WHERE studentid = ?");
+$stmt->bind_param("s", $studentId);
+$stmt->execute();
+$result = $stmt->get_result();
+$emergencyDetails = $result->fetch_assoc();
+
+if ($result->num_rows > 0) {
+    echo "Existing emergency details found.";
+} else {
+    echo "No emergency details found. Please add them.";
+}
+
+// Handling form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $relation = $_POST['relation'] ?? '';
     $first_name = $_POST['first_name'] ?? '';
     $last_name = $_POST['last_name'] ?? '';
     $phone = $_POST['phone'] ?? '';
-    $studentId = $_POST['studentId'] ?? '';
 
-    // Check if student ID is available
-    if (empty($studentId)) {
-        die("Student ID is missing.");
-    }
-
-    // Database connection assumed to be setup as $conn
-    if (empty($emergencyDetails)) {
+    if (!$emergencyDetails) {
         // Insert new emergency detail
-        $stmt = $conn->prepare("INSERT INTO emergency_details (studentid, relation, first_name, last_name, phone) VALUES (?, ?, ?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO student_emergency (studentid, relation, first_name, last_name, phone) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("sssss", $studentId, $relation, $first_name, $last_name, $phone);
     } else {
         // Update existing emergency detail
-        $stmt = $conn->prepare("UPDATE emergency_details SET relation = ?, first_name = ?, last_name = ?, phone = ? WHERE studentid = ?");
+        $stmt = $conn->prepare("UPDATE student_emergency SET relation = ?, first_name = ?, last_name = ?, phone = ? WHERE studentid = ?");
+        $stmt->bind_param("sssss", $relation, $first_name, $last_name, $phone, $studentId);
     }
 
-    if ($stmt === false) {
-        die("Prepare failed: " . $conn->error);
-    }
-
-    $stmt->bind_param("sssss", $relation, $first_name, $last_name, $phone, $studentId);
     if (!$stmt->execute()) {
-        echo "Execution error: " . $stmt->error;
+        echo "Error updating record: " . htmlspecialchars($stmt->error);
     } else {
-        echo "Data updated successfully.";
+        echo "Emergency details updated successfully.";
     }
     $stmt->close();
 }
-?>
 
+// Form for updating or adding details
+echo "<form method='POST' action=''>
+    <label for='relation'>Relation:</label><br>
+    <input type='text' id='relation' name='relation' value='" . ($emergencyDetails['relation'] ?? '') . "'><br>
+    <label for='first_name'>First Name:</label><br>
+    <input type='text' id='first_name' name='first_name' value='" . ($emergencyDetails['first_name'] ?? '') . "'><br>
+    <label for='last_name'>Last Name:</label><br>
+    <input type='text' id='last_name' name='last_name' value='" . ($emergencyDetails['last_name'] ?? '') . "'><br>
+    <label for='phone'>Phone:</label><br>
+    <input type='text' id='phone' name='phone' value='" . ($emergencyDetails['phone'] ?? '') . "'><br>
+    <input type='submit' value='Update'>
+</form>";
+?>
