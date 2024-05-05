@@ -356,29 +356,27 @@ echo "<img src='{$image_path}' alt='Student Images' style='border-radius: 50%; f
 <?php
 echo "<h2>Student Emergency</h2>";
 
-// Ensure $studentId is obtained correctly from session or a valid source
 if (!isset($_SESSION['studentId'])) {
     die("Student ID is not set.");
 }
 $studentId = $_SESSION['studentId'];
 
-
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// Fetch existing emergency details
 $stmt = $conn->prepare("SELECT * FROM student_emergency WHERE studentid = ?");
 $stmt->bind_param("s", $studentId);
 $stmt->execute();
 $result = $stmt->get_result();
 $emergencyDetails = $result->fetch_assoc();
 
-if ($result->num_rows > 0) {
-    echo "Existing emergency details found.";
-} else {
-    echo "No emergency details found. Please add them.";
-}
+if (!$emergencyDetails) 
+
+echo "<div class='alert alert-danger' role='alert'>
+        <i class='fas fa-exclamation-triangle'></i>
+        <strong> Warning!</strong> No emergency details found. Please add them.
+      </div>";
 
 // Handling form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -400,7 +398,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$stmt->execute()) {
         echo "Error updating record: " . htmlspecialchars($stmt->error);
     } else {
-        echo "Emergency details updated successfully.";
+        // Reload the page to reflect changes
+        echo "<script>window.location = window.location.href;</script>";
     }
     $stmt->close();
 }
