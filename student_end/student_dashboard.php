@@ -18,6 +18,39 @@ $student = mysqli_fetch_assoc($result);
 
 
 
+// ...
+
+// Update emergency details if form is submitted
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['emergency'])) {
+    // Clear existing emergency details
+    $deleteSql = "DELETE FROM emergency_details WHERE studentid = '$studentId'";
+    mysqli_query($conn, $deleteSql);
+
+    // Insert new emergency details
+    for ($i = 0; $i < 3; $i++) {
+        if (!empty($_POST['relation'][$i]) && !empty($_POST['firstname'][$i]) && !empty($_POST['lastname'][$i])) {
+            $relation = mysqli_real_escape_string($conn, $_POST['relation'][$i]);
+            $firstname = mysqli_real_escape_string($conn, $_POST['firstname'][$i]);
+            $lastname = mysqli_real_escape_string($conn, $_POST['lastname'][$i]);
+            $insertSql = "INSERT INTO emergency_details (studentid, relation, firstname, lastname, contact_order) VALUES ('$studentId', '$relation', '$firstname', '$lastname', '$i')";
+            mysqli_query($conn, $insertSql);
+        }
+    }
+
+    // Refresh emergency details
+    $emergencyDetails = [];
+    $detailsResult = mysqli_query($conn, $getDetailsSql);
+    while ($detail = mysqli_fetch_assoc($detailsResult)) {
+        $emergencyDetails[] = $detail;
+    }
+}
+
+
+
+
+
+
+
 
 
 // Fetch student information
@@ -313,4 +346,85 @@ echo "<img src='{$image_path}' alt='Student Images' style='border-radius: 50%; f
     </div>
 </div>
 
+
+
+
+
+
+
+
+<?php
+echo "<h2>Student Emergency</h2>";
+
+// Assuming $studentId is fetched from a session or a safe source and is validated
+if (!isset($studentId)) {
+    die("Student ID is not set.");
+}
+
+// Assuming $emergencyDetails is fetched from the database based on the student ID
+if (empty($emergencyDetails)) {
+    echo "No emergency details found. Please update as a matter of urgency.";
+    echo "<form method='POST' action=''>
+        <label for='relation'>Relation:</label><br>
+        <input type='text' id='relation' name='relation'><br>
+        <label for='first_name'>First Name:</label><br>
+        <input type='text' id='first_name' name='first_name'><br>
+        <label for='last_name'>Last Name:</label><br>
+        <input type='text' id='last_name' name='last_name'><br>
+        <label for='phone'>Phone:</label><br>
+        <input type='text' id='phone' name='phone'><br>
+        <input type='hidden' name='studentId' value='$studentId'>
+        <input type='submit' value='Submit'>
+        </form>";
+} else {
+    $emergencyDetail = $emergencyDetails[0];
+    echo "<form method='POST' action=''>
+        <label for='relation'>Relation:</label><br>
+        <input type='text' id='relation' name='relation' value='{$emergencyDetail['relation']}'><br>
+        <label for='first_name'>First Name:</label><br>
+        <input type='text' id='first_name' name='first_name' value='".(isset($emergencyDetail['first_name']) ? $emergencyDetail['first_name'] : '')."'><br>
+        <label for='last_name'>Last Name:</label><br>
+        <input type='text' id='last_name' name='last_name' value='".(isset($emergencyDetail['last_name']) ? $emergencyDetail['last_name'] : '')."'><br>
+        <label for='phone'>Phone:</label><br>
+        <input type='text' id='phone' name='phone' value='{$emergencyDetail['phone']}'><br>
+        <input type='hidden' name='studentId' value='$studentId'>
+        <input type='submit' value='Update'>
+    </form>";
+}
+
+// Handle form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $relation = $_POST['relation'] ?? '';
+    $first_name = $_POST['first_name'] ?? '';
+    $last_name = $_POST['last_name'] ?? '';
+    $phone = $_POST['phone'] ?? '';
+    $studentId = $_POST['studentId'] ?? '';
+
+    // Check if student ID is available
+    if (empty($studentId)) {
+        die("Student ID is missing.");
+    }
+
+    // Database connection assumed to be setup as $conn
+    if (empty($emergencyDetails)) {
+        // Insert new emergency detail
+        $stmt = $conn->prepare("INSERT INTO emergency_details (studentid, relation, first_name, last_name, phone) VALUES (?, ?, ?, ?, ?)");
+    } else {
+        // Update existing emergency detail
+        $stmt = $conn->prepare("UPDATE emergency_details SET relation = ?, first_name = ?, last_name = ?, phone = ? WHERE studentid = ?");
+    }
+
+    if ($stmt === false) {
+        die("Prepare failed: " . $conn->error);
+    }
+
+    $stmt->bind_param("sssss", $relation, $first_name, $last_name, $phone, $studentId);
+    if (!$stmt->execute()) {
+        echo "Execution error: " . $stmt->error;
+    } else {
+        echo "Data updated successfully.";
+    }
+    $stmt->close();
+}
+?>
 

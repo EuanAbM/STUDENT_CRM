@@ -1,55 +1,34 @@
 <?php
-session_start();
-
-var_dump($_POST);
-
 // Include database connection
-require 'dbconnect.inc';
-$studentId = $_SESSION['studentId'];
+require '../_includes/dbconnect.inc';
 
-
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+// Enable error reporting
 error_reporting(E_ALL);
+ini_set('display_errors', '1');
 
+try {
+    if(isset($_POST['emergencyContacts']) && isset($_POST['studentId'])) {
+        $emergencyContacts = $_POST['emergencyContacts'];
+        $studentId = $conn->real_escape_string($_POST['studentId']); // Sanitize the studentId
 
+        // Attempt to insert or update the record
+        foreach($emergencyContacts as $contact) {
+            $sql = "INSERT INTO emergency_contacts (studentid, contact) VALUES ('$studentId', '$contact')
+                    ON DUPLICATE KEY UPDATE contact = VALUES(contact);";
 
-// Verify if student exists with the provided studentId
-$checkStudentSql = "SELECT * FROM student WHERE studentid = '$studentId'";
-$studentResult = mysqli_query($conn, $checkStudentSql);
-
-if (mysqli_num_rows($studentResult) == 0) {
-    die("Error: Student with ID '$studentId' not found.");
-}
-
-// Verify if emergency_contacts array exists and is not empty
-if (isset($_POST['emergency_contacts']) && is_array($_POST['emergency_contacts'])) {
-    $emergencyContacts = $_POST['emergency_contacts'];
-
-    // Iterate through emergency contacts and update in database
-    foreach ($emergencyContacts as $index => $contact) {
-        $contactId = mysqli_real_escape_string($conn, $contact['id']);
-        $contactType = mysqli_real_escape_string($conn, $contact['type']);
-        $firstName = mysqli_real_escape_string($conn, $contact['first_name']);
-        $lastName = mysqli_real_escape_string($conn, $contact['last_name']);
-        $phoneNumber = mysqli_real_escape_string($conn, $contact['phone']);
-
-        // Update the emergency contact
-        $updateContactSql = "UPDATE emergency_contacts SET type='$contactType', first_name='$firstName', last_name='$lastName', phone_number='$phoneNumber' WHERE id='$contactId' AND studentid='$studentId'";
-        $result = mysqli_query($conn, $updateContactSql);
-
-        if (!$result) {
-            die("Error updating emergency contact: " + mysqli_error($conn));
+            if ($conn->query($sql) !== TRUE) {
+                throw new Exception("Error updating emergency contact data: " . $conn->error);
+            }
         }
+        echo "Emergency contact data inserted or updated successfully.";
+    } else {
+        throw new Exception("Error: POST data is not set or studentId is not in the POST data");
     }
-    echo "No emergency contacts data received.";
+} catch (Exception $e) {
+    error_log($e->getMessage());
+    echo $e->getMessage();
 }
 
-
-$studentId = $_POST['studentId'];
-
-
-// Redirect back to student_dashboard.php after processing
-header("Location: student_dashboard.php");
-exit();
+// Close the database connection
+$conn->close();
 ?>
