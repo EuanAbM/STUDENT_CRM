@@ -141,6 +141,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['emergency'])) {
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+
     <style>
         /* Add custom styles here */
         .emergency-contact {
@@ -202,63 +205,117 @@ echo "<img src='{$image_path}' alt='Student Images' style='border-radius: 50%; f
                     <hr>
 
                     <!-- Emergency Contacts -->
-                    <h5>Emergency Contacts</h5>
-                    <div class="row">
-                        <?php foreach ($emergencyDetails as $index => $detail): ?>
-                            <div class="col-md-4">
-                                <div class="emergency-contact">
-                                    <h6>Emergency Contact <?php echo $index + 1; ?></h6>
-                                    <p><strong>Relation:</strong> <?php echo ucfirst($detail['relation']); ?></p>
-                                    <p><strong>Name:</strong> <?php echo $detail['firstname'] . ' ' . $detail['lastname']; ?></p>
-                                    <button class="btn btn-sm btn-primary edit-btn" data-toggle="modal" data-target="#editModal<?php echo $index; ?>">Edit</button>
-                                </div>
+                
 
-                                <!-- Edit Emergency Contact Modal -->
-                                <div class="modal fade" id="editModal<?php echo $index; ?>" tabindex="-1" role="dialog" aria-labelledby="editModalLabel<?php echo $index; ?>" aria-hidden="true">
-                                    <div class="modal-dialog" role="document">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="editModalLabel<?php echo $index; ?>">Edit Emergency Contact</h5>
-                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                    <span aria-hidden="true">&times;</span>
-                                                </button>
-                                            </div>
-                                            <div class="modal-body">
-                                                <form method="post" action="">
-                                                    <div class="form-group">
-                                                        <label for="relation">Relation</label>
-                                                        <input type="text" class="form-control" id="relation" name="relation[<?php echo $index; ?>]" value="<?php echo $detail['relation']; ?>">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label for="firstname">First Name</label>
-                                                        <input type="text" class="form-control" id="firstname" name="firstname[<?php echo $index; ?>]" value="<?php echo $detail['firstname']; ?>">
-                                                    </div>
-                                                    <div class="form-group">
-                                                        <label for="lastname">Last Name</label>
-                                                        <input type="text" class="form-control" id="lastname" name="lastname[<?php echo $index; ?>]" value="<?php echo $detail['lastname']; ?>">
-                                                    </div>
-                                                    <!-- Add phone number input if needed -->
-                                                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
 
-                    <hr>
 
-                    <!-- Recent Grades and Assignments Display -->
+
+
                     
-               
+                    <?php
+
+echo "<h4>Student Emergency Contact</h4>";
+echo "In the event of an emergency, these are the contact details we will contact if needed.";
+echo "<br>"; 
+
+if (!isset($_SESSION['studentId'])) {
+    die("Student ID is not set.");
+}
+$studentId = $_SESSION['studentId'];
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+$stmt = $conn->prepare("SELECT * FROM student_emergency WHERE studentid = ?");
+$stmt->bind_param("s", $studentId);
+$stmt->execute();
+$result = $stmt->get_result();
+$emergencyDetails = $result->fetch_assoc();
+
+if (!$emergencyDetails) {
+    echo "<div class='alert alert-danger' role='alert'>
+            <i class='fas fa-exclamation-triangle'></i>
+            <strong> Warning!</strong> No emergency details found. Please add them urgently.
+          </div>";
+}
+
+// Handling form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $relation = $_POST['relation'] ?? '';
+    $first_name = $_POST['first_name'] ?? '';
+    $last_name = $_POST['last_name'] ?? '';
+    $phone = $_POST['phone'] ?? '';
+
+    // Simple phone number validation
+    if (!preg_match("/^\+?[1-9]\d{1,14}$/", $phone)) {
+        echo "<div class='alert alert-warning' role='alert'>Invalid phone number format.</div>";
+    } else {
+        if (!$emergencyDetails) {
+            // Insert new emergency detail
+            $stmt = $conn->prepare("INSERT INTO student_emergency (studentid, relation, first_name, last_name, phone) VALUES (?, ?, ?, ?, ?)");
+            $stmt->bind_param("sssss", $studentId, $relation, $first_name, $last_name, $phone);
+        } else {
+            // Update existing emergency detail
+            $stmt = $conn->prepare("UPDATE student_emergency SET relation = ?, first_name = ?, last_name = ?, phone = ? WHERE studentid = ?");
+            $stmt->bind_param("sssss", $relation, $first_name, $last_name, $phone, $studentId);
+        }
+
+        if (!$stmt->execute()) {
+            echo "Error updating record: " . htmlspecialchars($stmt->error);
+        } else {
+            // Reload the page to reflect changes
+            echo "<script>window.location = window.location.href;</script>";
+        }
+        $stmt->close();
+    }
+}
+
+// Form for updating or adding details
+echo "<form method='POST' action='' class='mb-3'>
+    <div class='mb-3'>
+        <label for='relation' class='form-label'>Relation:</label>
+        <input type='text' id='relation' name='relation' value='" . ($emergencyDetails['relation'] ?? '') . "' class='form-control'>
+    </div>
+    <div class='row mb-3'>
+        <div class='col'>
+            <label for='first_name' class='form-label'>First Name:</label>
+            <input type='text' id='first_name' name='first_name' value='" . ($emergencyDetails['first_name'] ?? '') . "' class='form-control'>
+        </div>
+        <div class='col'>
+            <label for='last_name' class='form-label'>Last Name:</label>
+            <input type='text' id='last_name' name='last_name' value='" . ($emergencyDetails['last_name'] ?? '') . "' class='form-control'>
+        </div>
+    </div>
+    <div class='mb-3'>
+        <label for='phone' class='form-label'>Phone:</label>
+        <input type='tel' id='phone' name='phone' value='" . ($emergencyDetails['phone'] ?? '') . "' class='form-control'>
+    </div>
+    <button type='submit' class='btn btn-primary'>Update</button>
+</form>";
+
+?>
+
+<script>
+    // Initialize international telephone input with flags
+    var input = document.querySelector("#phone");
+    window.intlTelInput(input, {
+        utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js"
+    });
+</script>
 
 
 
-                    <h5>Attendance</h5>
+
+
+
+<!-- Attendance -->
+
+
+
+
+
 <?php
-    // Assuming you have a connection to your database in a variable called $conn
     if(isset($studentId)) { // Check if studentId is set
         $sql = "SELECT * FROM attendance WHERE studentid = ?";
         $stmt = $conn->prepare($sql);
@@ -354,7 +411,8 @@ echo "<img src='{$image_path}' alt='Student Images' style='border-radius: 50%; f
 
 
 <?php
-echo "<h2>Student Emergency</h2>";
+echo "<h2>Student Emergency Contact</h2>";
+echo "fF";
 
 if (!isset($_SESSION['studentId'])) {
     die("Student ID is not set.");
@@ -375,7 +433,7 @@ if (!$emergencyDetails)
 
 echo "<div class='alert alert-danger' role='alert'>
         <i class='fas fa-exclamation-triangle'></i>
-        <strong> Warning!</strong> No emergency details found. Please add them.
+        <strong> Warning!</strong> No emergency details found. Please add them urgently.
       </div>";
 
 // Handling form submission
