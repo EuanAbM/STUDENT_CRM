@@ -305,16 +305,11 @@ echo "<form method='POST' action='' class='mb-3'>
 </script>
 
 
-
+<hr>
 
 
 
 <!-- Attendance -->
-
-
-
-
-
 <?php
     if(isset($studentId)) { // Check if studentId is set
         $sql = "SELECT * FROM attendance WHERE studentid = ?";
@@ -336,26 +331,46 @@ echo "<form method='POST' action='' class='mb-3'>
     }
 ?>
 
+<style>
+    #attendanceChart {
+        aspect-ratio: 1; /* Ensures the chart is round */
+        max-width: 300px; /* Adjust width as needed */
+        margin: auto; /* Centers the chart */
+    }
+</style>
+
 <div class="row mt-5">
     <div class="col-md-6">
-    <h4>Attendance Record</h4>
-<div class="form-group">
-    <label for="present">Present</label>
-    <p id="present"><?php echo $present; ?></p>
-</div>
-<div class="form-group">
-    <label for="absent">Absent</label>
-    <p id="absent"><?php echo $absent; ?></p>
-</div>
-<div class="form-group">
-    <label for="medical">Medical</label>
-    <p id="medical"><?php echo $medical; ?></p>
-</div>
-<p id="attendancePercentage">Your Attendance is <?php echo round(($present / ($present + $absent + $medical)) * 100); ?>%</p>
-</div>
-<div class="col-md-6">
-    <canvas id="attendanceChart" style="max-width: 300px;"></canvas>
-</div>
+        <h4>Attendance Record</h4>
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Percentage</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Present</td>
+                    <td><?php echo $present . '%'; ?></td>
+                </tr>
+                <tr>
+                    <td>Absent</td>
+                    <td><?php echo $absent . '%'; ?></td>
+                </tr>
+                <tr>
+                    <td>Medical</td>
+                    <td><?php echo $medical . '%'; ?></td>
+                </tr>
+            </tbody>
+        </table>
+        <button type="button" class="btn btn-primary">
+            Your Attendance Is: <span class="badge text-bg-secondary"><?php echo round(($present / ($present + $absent + $medical)) * 100) . '%'; ?></span>
+        </button>
+    </div>
+    <div class="col-md-6">
+        <canvas id="attendanceChart"></canvas>
+    </div>
 </div>
 
 <!-- Bootstrap JS and jQuery -->
@@ -377,6 +392,7 @@ echo "<form method='POST' action='' class='mb-3'>
         },
         options: {
             responsive: true,
+            maintainAspectRatio: true, // This maintains the aspect ratio
             title: {
                 display: true,
                 text: 'Attendance Record'
@@ -384,6 +400,11 @@ echo "<form method='POST' action='' class='mb-3'>
         }
     });
 </script>
+
+
+
+
+
 
 
 
@@ -404,74 +425,184 @@ echo "<form method='POST' action='' class='mb-3'>
 </div>
 
 
-
-
-
-
-
-
 <?php
-echo "<h2>Student Emergency Contact</h2>";
-echo "fF";
 
-if (!isset($_SESSION['studentId'])) {
-    die("Student ID is not set.");
-}
-$studentId = $_SESSION['studentId'];
 
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+// Attempt to query attendance data
+if(isset($studentId)) {
+    $sql = "SELECT * FROM attendance WHERE studentid = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $studentId);
+    $stmt->execute();
+    $result = $stmt->get_result();
 
-$stmt = $conn->prepare("SELECT * FROM student_emergency WHERE studentid = ?");
-$stmt->bind_param("s", $studentId);
-$stmt->execute();
-$result = $stmt->get_result();
-$emergencyDetails = $result->fetch_assoc();
-
-if (!$emergencyDetails) 
-
-echo "<div class='alert alert-danger' role='alert'>
-        <i class='fas fa-exclamation-triangle'></i>
-        <strong> Warning!</strong> No emergency details found. Please add them urgently.
-      </div>";
-
-// Handling form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $relation = $_POST['relation'] ?? '';
-    $first_name = $_POST['first_name'] ?? '';
-    $last_name = $_POST['last_name'] ?? '';
-    $phone = $_POST['phone'] ?? '';
-
-    if (!$emergencyDetails) {
-        // Insert new emergency detail
-        $stmt = $conn->prepare("INSERT INTO student_emergency (studentid, relation, first_name, last_name, phone) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("sssss", $studentId, $relation, $first_name, $last_name, $phone);
+    if ($result && $result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $present = $row["present"];
+        $absent = $row["absent"];
+        $medical = $row["medical"];
+        $attendanceMessage = "Your Attendance: Present $present days, Absent $absent days, Medical $medical days.";
     } else {
-        // Update existing emergency detail
-        $stmt = $conn->prepare("UPDATE student_emergency SET relation = ?, first_name = ?, last_name = ?, phone = ? WHERE studentid = ?");
-        $stmt->bind_param("sssss", $relation, $first_name, $last_name, $phone, $studentId);
+        $attendanceMessage = "No attendance data available.";
     }
-
-    if (!$stmt->execute()) {
-        echo "Error updating record: " . htmlspecialchars($stmt->error);
-    } else {
-        // Reload the page to reflect changes
-        echo "<script>window.location = window.location.href;</script>";
-    }
-    $stmt->close();
+} else {
+    $attendanceMessage = "Student ID not found.";
 }
-
-// Form for updating or adding details
-echo "<form method='POST' action=''>
-    <label for='relation'>Relation:</label><br>
-    <input type='text' id='relation' name='relation' value='" . ($emergencyDetails['relation'] ?? '') . "'><br>
-    <label for='first_name'>First Name:</label><br>
-    <input type='text' id='first_name' name='first_name' value='" . ($emergencyDetails['first_name'] ?? '') . "'><br>
-    <label for='last_name'>Last Name:</label><br>
-    <input type='text' id='last_name' name='last_name' value='" . ($emergencyDetails['last_name'] ?? '') . "'><br>
-    <label for='phone'>Phone:</label><br>
-    <input type='text' id='phone' name='phone' value='" . ($emergencyDetails['phone'] ?? '') . "'><br>
-    <input type='submit' value='Update'>
-</form>";
 ?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+
+<div aria-live="polite" aria-atomic="true" class="position-fixed" style="top: 0; right: 0; z-index: 1050;">
+    <div class="toast-container p-3">
+        <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto">Attendance Update</strong>
+                <small>Just now</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                <?php echo $attendanceMessage; ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap and jQuery scripts -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('.toast').toast('show');
+});
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrollable Auto Close Sticky Popup</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Custom styles for the sticky top-right popup */
+        .modal-dialog-top-right {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            margin: 0;
+            width: 300px;
+        }
+        .progress {
+            height: 20px;
+        }
+        .progress-bar {
+            background-color: green;
+        }
+        /* Override Bootstrap modal open style to allow page scrolling */
+        .modal-open {
+            overflow: visible;
+        }
+    </style>
+</head>
+<body>
+<?php
+    // Initialize the attendance variables
+    $present = $absent = $medical = 0;
+    if(isset($studentId)) {
+        $sql = "SELECT * FROM attendance WHERE studentid = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $studentId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result && $result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            $present = $row["present"];
+            $absent = $row["absent"];
+            $medical = $row["medical"];
+        }
+    }
+    $totalAbsences = $absent + $medical;
+    $attendancePercentage = round(($present / ($present + $totalAbsences)) * 100);
+?>
+
+<!-- The Modal -->
+<div class="modal" id="autoClosePopup" data-bs-backdrop="false" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-top-right">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabel">Your Attendance</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <?php echo "You have <strong>$totalAbsences</strong> days of absences (including authorised medical days)."; ?>
+                <!-- Progress bar -->
+                <div class="progress mt-3">
+                    <div class="progress-bar" role="progressbar" style="width: 100%;" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var myModal = new bootstrap.Modal(document.getElementById('autoClosePopup'), {
+            keyboard: false
+        });
+        myModal.show();
+
+        // Progress bar animation
+        var progressBar = document.querySelector('.progress-bar');
+        var time = 5000; // 5 seconds
+        var interval = 50;
+        var step = 100 / (time / interval); // percentage increase per step
+
+        var width = 100;
+        var progressInterval = setInterval(function () {
+            width -= step;
+            if (width < 0) {
+                clearInterval(progressInterval);
+                myModal.hide();
+            } else {
+                progressBar.style.width = width + '%';
+            }
+        }, interval);
+
+        // Option to manually close
+        document.querySelector('.btn-primary').addEventListener('click', function () {
+            clearInterval(progressInterval);
+            myModal.hide();
+        });
+    });
+</script>
+</body>
+</html>
