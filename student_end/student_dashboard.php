@@ -339,6 +339,76 @@ echo "<form method='POST' action='' class='mb-3'>
     }
 </style>
 
+
+
+
+
+<!-- Attendance Record Section -->
+
+
+
+
+<!-- Bootstrap JS and jQuery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    var ctx = document.getElementById('attendanceChart').getContext('2d');
+    var chart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Present', 'Absent', 'Medical'],
+            datasets: [{
+                data: [0, 0, 0], // Initialize with 0, you'll update these values dynamically
+                backgroundColor: ['green', 'red', 'blue']
+            }]
+        },
+        options: {
+            responsive: true,
+            title: {
+                display: true,
+                text: 'Attendance Record'
+            }
+        }
+    });
+
+   
+
+
+
+        // Redraw the chart
+        chart.update();
+
+        // Update the attendance percentage
+        var total = parseInt(present) + parseInt(absent) + parseInt(medical);
+        var percentage = total > 0 ? Math.round((present / total) * 100) : 0;
+        document.getElementById('attendancePercentage').textContent = "The Student's attendance is currently " + percentage + "%";
+    }
+</script>
+</body>
+</html>
+
+
+    <!-- Additional sections can be added here -->
+
+    <!-- Bootstrap JS and jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
 <div class="row mt-5">
     <div class="col-md-6">
         <h4>Attendance Record</h4>
@@ -549,6 +619,21 @@ $(document).ready(function() {
     $totalAbsences = $absent + $medical;
     $attendancePercentage = round(($present / ($present + $totalAbsences)) * 100);
 ?>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 <!-- The Modal -->
 <div class="modal" id="autoClosePopup" data-bs-backdrop="false" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
