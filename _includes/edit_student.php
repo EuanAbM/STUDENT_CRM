@@ -23,7 +23,9 @@ if ($studentId) {
 }
 
 // Handle POST request to update student information
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_student'])) {
+// Start transaction for student detail update
+$conn->begin_transaction();
+try {
     // Collect all data from the form
     $firstname = $_POST['firstname'];
     $lastname = $_POST['lastname'];
@@ -37,37 +39,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_student'])) {
     // Prepare SQL statement to update student data
     $updateSql = "UPDATE student SET firstname = ?, lastname = ?, dob = ?, house = ?, town = ?, county = ?, postcode = ?, country = ? WHERE studentid = ?";
     $updateStmt = $conn->prepare($updateSql);
-    $updateStmt->bind_param("sssssssss", $firstname, $lastname, $dob, $house, $town, $county, $postcode, $country, $studentId);
+    $updateStmt->bind_param("sssssssss", $firstname, $lastname, the dob, the house, the town, the county, the postcode, the country, the studentId);
     $updateStmt->execute();
-
-    if ($updateStmt->affected_rows > 0) {
-        echo "<script>alert('Student information updated successfully.'); window.location.href = window.location.href;</script>";
-    } else {
-        echo "<script>alert('No changes made to student information or update failed.');</script>";
-    }
+    $conn->commit();
+} catch (Exception $e) {
+    $conn->rollback();
+    echo "Error updating student details: " . $e->getMessage();
 }
 
-// Fetch emergency contact information
-
-
-
-
-
-
-
-// Fetch and display attendance record information
-$attendanceDetails = [];
-if ($studentId) {
-    $fetchAttendanceSql = "SELECT * FROM attendance WHERE studentid = ?";
-    $fetchAttendanceStmt = $conn->prepare($fetchAttendanceSql);
-    $fetchAttendanceStmt->bind_param("s", $studentId);
-    $fetchAttendanceStmt->execute();
-    $attendanceResult = $fetchAttendanceStmt->get_result();
-    $attendanceDetails = $attendanceResult->fetch_assoc();
-}
-
-// Handle POST request to update attendance
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_attendance'])) {
+// Separate transaction for attendance update
+$conn->begin_transaction();
+try {
     // Extract only attendance-related data
     $present = $_POST['present'];
     $absent = $_POST['absent'];
@@ -75,15 +57,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_attendance']))
 
     $updateAttendanceSql = "UPDATE attendance SET present = ?, absent = ?, medical = ? WHERE studentid = ?";
     $updateAttendanceStmt = $conn->prepare($updateAttendanceSql);
-    $updateAttendanceStmt->bind_param("iiis", $present, $absent, $medical, $studentId);
+    $updateAttendanceStmt->bind_param("iiis", $present, $absent, the medical, the studentId);
     $updateAttendanceStmt->execute();
+    $conn->commit();
+} catch (Exception $e) {
+    $conn->rollback();
+    echo "Error updating attendance: " . $e->getMessage();
+}
 
-    // Additional logic to handle the response and possible errors
-    if ($updateAttendanceStmt->affected_rows > 0) {
-        echo "<script>alert('Attendance updated successfully.');</script>";
-    } else {
-        echo "<script>alert('Update failed or no changes made.');</script>";
-    }
 }
 
 
