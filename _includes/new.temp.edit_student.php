@@ -1,191 +1,88 @@
 <?php
-require 'dbconnect.inc';
-
-$studentId = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT);
-
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-// Prepare and execute select statement
-$stmt = $conn->prepare("SELECT * FROM student WHERE studentid = ?");
-$stmt->bind_param("i", $studentId);
-$stmt->execute();
-$result = $stmt->get_result();
-$student = $result->fetch_assoc();
+session_start();
+require '../_includes/dbconnect.inc'; // Assuming the same database connection logic
 
 
+// Get student ID from the URL
+$studentId = isset($_GET['id']) ? $_GET['id'] : '';
 
-// Fetch emergency contacts for the student
-$emergencyContacts = [];
-$emergencyStmt = $conn->prepare("SELECT * FROM emergency_details WHERE studentid = ?");
-$emergencyStmt->bind_param("i", $studentId);
-$emergencyStmt->execute();
-$emergencyResult = $emergencyStmt->get_result();
-while ($contact = $emergencyResult->fetch_assoc()) {
-    $emergencyContacts[] = $contact;
-}
+// Fetch student information
+$student = [];
+if ($studentId) {
+    $stmt = $conn->prepare("SELECT * FROM student WHERE studentid = ?");
+    $stmt->bind_param("s", $studentId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $student = $result->fetch_assoc();
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Sanitize and prepare data
-    $firstname = filter_input(INPUT_POST, 'firstname', FILTER_SANITIZE_STRING);
-    $lastname = filter_input(INPUT_POST, 'lastname', FILTER_SANITIZE_STRING);
-    $dob = filter_input(INPUT_POST, 'dob', FILTER_SANITIZE_STRING);
-    $house = filter_input(INPUT_POST, 'house', FILTER_SANITIZE_STRING);
-    $town = filter_input(INPUT_POST, 'town', FILTER_SANITIZE_STRING);
-    $county = filter_input(INPUT_POST, 'county', FILTER_SANITIZE_STRING);
-    $country = filter_input(INPUT_POST, 'country', FILTER_SANITIZE_STRING);
-    $postcode = filter_input(INPUT_POST, 'postcode', FILTER_SANITIZE_STRING);
-    $password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_STRING);
-    $image = $student['image']; // Default to current image
-
-    // Handle image upload
-    if ($_FILES['image']['error'] == 0) {
-        $image = 'uploads/' . basename($_FILES['image']['name']);
-        move_uploaded_file($_FILES['image']['tmp_name'], $image);
+    if (!$student) {
+        die('Student not found');
     }
-
-    // Prepare and execute update statement
-    
-// Prepare and execute update statement
-$updateStmt = $conn->prepare("UPDATE student SET firstname=?, lastname=?, dob=?, house=?, town=?, county=?, country=?, postcode=?, image=?, email=?, phone=? WHERE studentid=?");
-$updateStmt->bind_param("sssssssssssi", $firstname, $lastname, $dob, $house, $town, $county, $country, $postcode, $image, $email, $phone, $studentId);
-$updateStmt->execute();
-
-
-if (!isset($_GET['id'])) {
-    die('Student ID not provided');
+} else {
+    die('No student ID provided');
 }
 
-$studentId = $_GET['id'];
+// Handle POST request to update student information
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_student'])) {
+    // Collect all data from the form
+    $firstname = $_POST['firstname'];
+    $lastname = $_POST['lastname'];
+    $dob = $_POST['dob'];
+    $house = $_POST['house'];
+    $town = $_POST['town'];
+    $county = $_POST['county'];
+    $postcode = $_POST['postcode'];
+    $country = $_POST['country'];
 
-// ...
+    // Prepare SQL statement to update student data
+    $updateSql = "UPDATE student SET firstname = ?, lastname = ?, dob = ?, house = ?, town = ?, county = ?, postcode = ?, country = ? WHERE studentid = ?";
+    $updateStmt = $conn->prepare($updateSql);
+    $updateStmt->bind_param("sssssssss", $firstname, $lastname, $dob, $house, $town, $county, $postcode, $country, $studentId);
+    $updateStmt->execute();
 
-// Prepare and execute update statement
-$updateStmt = $conn->prepare("UPDATE student SET firstname=?, lastname=?, dob=?, house=?, town=?, county=?, country=?, postcode=?, image=?, email=?, phone=? WHERE studentid=?");
-$updateStmt->bind_param("sssssssssssi", $firstname, $lastname, $dob, $house, $town, $county, $country, $postcode, $image, $email, $phone, $studentId);
-$updateStmt->execute();
-
-// ...
-
-$sql = "UPDATE students SET ";
-$types = '';
-$values = [];
-
-if (!empty($_POST['lastname'])) {
-    $sql .= "lastname = ?, ";
-    $types .= 's';
-    $values[] = $_POST['lastname'];
-}
-if (!empty($_POST['email'])) {
-    $sql .= "email = ?, ";
-    $types .= 's';
-    $values[] = $_POST['email'];
-}
-// ... repeat for other fields ...
-$sql = rtrim($sql, ', ');  // remove trailing comma
-$sql .= " WHERE studentid = ?";
-
-$types .= 'i';
-$values[] = $studentId;
-
-$stmt = $conn->prepare($sql);
-
-
-
-if (!isset($_POST['studentid'])) {
-    die('Student ID not provided');
-}
-$studentId = $_POST['studentid'];
-
-
-
-
-
-
-
-// Check if the id key is present in the $_POST array
-if (!isset($_POST['studentid'])) {
-    die('Student ID not provided');
-}
-
-$studentId = $_POST['studentid'];
-
-// ...
-
-// Prepare and execute update statement
-$updateStmt = $conn->prepare("UPDATE student SET firstname=?, lastname=?, dob=?, house=?, town=?, county=?, country=?, postcode=?, image=?, email=?, phone=? WHERE studentid=?");
-$updateStmt->bind_param("sssssssssssi", $firstname, $lastname, $dob, $house, $town, $county, $country, $postcode, $image, $email, $phone, $studentId);
-$updateStmt->execute();
-
-// ...
-
-// Check if the id key is present in the $_GET array
-if (!isset($_GET['studentid'])) {
-    die('Student ID not provided');
-}
-
-$studentId = $_GET['studentid'];
-
-$sql = "UPDATE students SET ";
-$types = '';
-$values = [];
-
-if (!empty($_POST['lastname'])) {
-    $sql .= "lastname = ?, ";
-    $types .= 's';
-    $values[] = $_POST['lastname'];
-}
-if (!empty($_POST['email'])) {
-    $sql .= "email = ?, ";
-    $types .= 's';
-    $values[] = $_POST['email'];
-}
-// ... repeat for other fields ...
-$sql = rtrim($sql, ', ');  // remove trailing comma
-$sql .= " WHERE studentid = ?";
-
-$types .= 'i';
-$values[] = $studentId;
-
-$stmt = $conn->prepare($sql);
-if ($stmt === false) {
-    die('Failed to prepare SQL statement');
-}
-$stmt->bind_param($types, ...$values);
-$stmt->execute();  // Execute the statement
-
-// ...
-
-
-
-
-
-// ... repeat for other fields ...
-$sql = rtrim($sql, ', ');  // remove trailing comma
-$sql .= " WHERE id = ?";
-
-$types .= 'i';
-$values[] = $_POST['id'];  // Assuming the form also includes a hidden field with the student ID
-
-$stmt = $conn->prepare($sql);
-$stmt->bind_param($types, ...$values);
-$stmt->execute();  // Execute the statement
-
-    if (!empty($password)) {
-        $password = password_hash($password, PASSWORD_DEFAULT);
-        $passwordStmt = $conn->prepare("UPDATE student SET password=? WHERE studentid=?");
-        $passwordStmt->bind_param("si", $password, $studentId);
-        $passwordStmt->execute();
+    if ($updateStmt->affected_rows > 0) {
+        echo "<script>alert('Student information updated successfully.'); window.location.href = window.location.href;</script>";
+    } else {
+        echo "<script>alert('No changes made to student information or update failed.');</script>";
     }
-
-
-
-
-
 }
 
+// Fetch emergency contact information
+
+
+
+
+
+
+
+// Fetch and display attendance record information
+$attendanceDetails = [];
+if ($studentId) {
+    $fetchAttendanceSql = "SELECT * FROM attendance WHERE studentid = ?";
+    $fetchAttendanceStmt = $conn->prepare($fetchAttendanceSql);
+    $fetchAttendanceStmt->bind_param("s", $studentId);
+    $fetchAttendanceStmt->execute();
+    $attendanceResult = $fetchAttendanceStmt->get_result();
+    $attendanceDetails = $attendanceResult->fetch_assoc();
+}
+
+// Handle POST request to update attendance
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_attendance'])) {
+    $present = $_POST['present'];
+    $absent = $_POST['absent'];
+    $medical = $_POST['medical'];
+
+    $updateAttendanceSql = "UPDATE attendance SET present = ?, absent = ?, medical = ? WHERE studentid = ?";
+    $updateAttendanceStmt = $conn->prepare($updateAttendanceSql);
+    $updateAttendanceStmt->bind_param("iiis", $present, $absent, $medical, $studentId);
+    $updateAttendanceStmt->execute();
+
+    if ($updateAttendanceStmt->affected_rows > 0) {
+        echo "<script>alert('Attendance updated successfully.');</script>";
+    } else {
+        echo "<script>alert('Update failed or no changes made.');</script>";
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -193,307 +90,130 @@ $stmt->execute();  // Execute the statement
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Student Profile - <?php echo $studentId; ?></title>
-    <!-- Bootstrap CSS -->
+    <title>Edit Student Information</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <style>
-        .profile-image {
-            width: 100%; /* Fill the width */
-            height: 100px; /* Fixed height */
-            object-fit: cover; /* Cover to maintain aspect ratio */
-            border-radius: 0; /* Square corners */
-        }
-        .header-area, .btn-primary {
-            background-color: #007bff; /* Bootstrap primary blue */
-            color: white;
-        }
-        .content-area {
-            background-color: #f8f9fa; /* Bootstrap light background */
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-        .back-to-students {
-            text-align: right;
-            padding: 10px;
-        }
-        .student-image {
-            object-fit: contain; /* This will make sure the image is scaled while maintaining its aspect ratio */
-            width: 100%; /* This will make the image take the full width of its container */
-            height: auto; /* This will make the image height adjust automatically based on its width */
-        }
-        .emergency-tile {
-            margin-top: 20px;
-            padding: 10px;
-            background-color: #efefef;
-            border: 1px solid #ddd;
-            text-align: center;
-        }
-        .emergency-tile.empty {
-            background-color: #f9f9f9;
-        }
-    </style>
 </head>
 <body>
+<div class="container mt-5">
+<h2>Edit Student Information</h2>
+<!-- Form for updating student details -->
+<form method="post" enctype="multipart/form-data">
+    <div class="form-group">
+        <label for="firstname">First Name:</label>
+        <input type="text" class="form-control" id="firstname" name="firstname" value="<?php echo htmlspecialchars($student['firstname']); ?>" required>
+    </div>
+    <div class="form-group">
+        <label for="lastname">Last Name:</label>
+        <input type="text" class="form-control" id="lastname" name="lastname" value="<?php echo htmlspecialchars($student['lastname']); ?>" required>
+    </div>
+    <div class="form-group">
+        <label for="dob">Date of Birth:</label>
+        <input type="date" class="form-control" id="dob" name="dob" value="<?php echo htmlspecialchars($student['dob']); ?>" required>
+    </div>
+    <div class="form-group">
+        <label for="house">House:</label>
+        <input type="text" class="form-control" id="house" name="house" value="<?php echo htmlspecialchars($student['house']); ?>" required>
+    </div>
+    <div class="form-group">
+        <label for="town">Town:</label>
+        <input type="text" class="form-control" id="town" name="town" value="<?php echo htmlspecialchars($student['town']); ?>" required>
+    </div>
+    <div class="form-group">
+        <label for="county">County:</label>
+        <input type="text" class="form-control" id="county" name="county" value="<?php echo htmlspecialchars($student['county']); ?>" required>
+    </div>
+    <div class="form-group">
+        <label for="postcode">Postcode:</label>
+        <input type="text" class="form-control" id="postcode" name="postcode" value="<?php echo htmlspecialchars($student['postcode']); ?>" required>
+    </div>
+    <div class="form-group">
+        <label for="country">Country:</label>
+        <input type="text" class="form-control" id="country" name="country" value="<?php echo htmlspecialchars($student['country']); ?>" required>
+    </div>
+
+    <!-- Profile Image Section -->
+    <div class="form-group text-center">
+        <label for="image">Profile Image</label><br>
+        <?php if (!empty($student['image'])) : ?>
+            <img src="<?php echo htmlspecialchars($student['image']); ?>" alt="Student Image" class="profile-image mb-3">
+        <?php else : ?>
+            <img src="placeholder.jpg" alt="Student Image" class="profile-image mb-3">
+        <?php endif; ?>
+        <input type="file" class="form-control-file" id="image" name="image">
+    </div>
+
+    <button type="submit" name="update_student" class="btn btn-primary">Update Information</button>
+</form>
+
+
+    <hr>
+
+
+    <h2>Edit Emergency Contact</h2>
+    <?php
+$fetchEmergencyContactsSql = "SELECT *, DATE_FORMAT(last_updated, '%d-%m-%Y %H:%i:%s') as formatted_last_updated FROM student_emergency WHERE studentid = ?";
+$fetchEmergencyStmt = $conn->prepare($fetchEmergencyContactsSql);
+$fetchEmergencyStmt->bind_param("s", $studentId);
+$fetchEmergencyStmt->execute();
+$emergencyResult = $fetchEmergencyStmt->get_result();
+$emergencyContacts = $emergencyResult->fetch_assoc(); // Fetch only one record assuming a student has one emergency contact
+?>
 
 <div class="container mt-5">
-    <div class="back-to-students">
-        <a href="students.php" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Students</a>
-    </div>
-    <div class="header-area p-2">
-        <h2>Edit Student Profile - <?php echo $studentId; ?></h2>
-    </div>
+    <form method="POST" action="" class="form">
+        <input type="hidden" name="contact_id" value="<?php echo htmlspecialchars($emergencyContacts['id']); ?>">
 
-    <div class="row">
-        <!-- Student Details -->
-        <div class="col-md-4 content-area">
-            <div class="text-center">
-                <!-- Profile Image -->
-                <?php if (!empty($student['image'])) : ?>
-                    <img src="<?php echo htmlspecialchars($student['image']); ?>" alt="Student Image" class="student-image  mb-3">
-                <?php else : ?>
-                    <img src="placeholder.jpg" alt="Student Image" class="profile-image mb-3">
-                <?php endif; ?>
-            </div>
+        <div class="mb-3">
+            <label for="relation" class="form-label">Relationship</label>
+            <input type="text" id="relation" name="relation" class="form-control" value="<?php echo htmlspecialchars($emergencyContacts['relation']); ?>">
         </div>
-        <div class="col-md-8 content-area">
-            <form method="post" action="" enctype="multipart/form-data">
-                <div class="form-group">
-                    <label>Student ID + Course Name</label>
-                    <p>Placeholder text</p>
-                    <label for="firstname">First Name</label>
-                    <input type="text" class="form-control" id="firstname" name="firstname" value="<?php echo htmlspecialchars($student['firstname']); ?>">
-                    <div class="form-group">
-    <label for="lastname">Last Name</label>
-    <input type="text" class="form-control" id="lastname" name="lastname" value="<?php echo htmlspecialchars($student['lastname']); ?>">
+
+        <div class="mb-3">
+            <label for="first_name" class="form-label">First Name</label>
+            <input type="text" id="first_name" name="first_name" class="form-control" value="<?php echo htmlspecialchars($emergencyContacts['first_name']); ?>">
+        </div>
+
+        <div class="mb-3">
+            <label for="last_name" class="form-label">Last Name</label>
+            <input type="text" id="last_name" name="last_name" class="form-control" value="<?php echo htmlspecialchars($emergencyContacts['last_name']); ?>">
+        </div>
+
+        <div class="mb-3">
+            <label for="phone" class="form-label">Phone</label>
+            <input type="text" id="phone" name="phone" class="form-control" value="<?php echo htmlspecialchars($emergencyContacts['phone']); ?>">
+        </div>
+
+        <div class="text-muted mb-3">
+            This emergency contact was last updated on: <?php echo $emergencyContacts['formatted_last_updated']; ?>
+        </div>
+
+        <button type="submit" name="update_emergency" class="btn btn-primary">Update</button>
+    </form>
 </div>
-<div class="form-group">
-    <label for="email">Email</label>
-    <input type="email" class="form-control" id="email" name="email" value="<?php echo htmlspecialchars($student['email']); ?>">
-</div>
-            
-                    <label for="phone">Phone</label>
-                    <input type="text" class="form-control" id="phone" name="phone" value="<?php echo htmlspecialchars($student['phone']); ?>">
-                    <label for="password">Update Password</label>
-                    <input type="password" class="form-control" id="password" name="password" placeholder="Enter new password or leave blank for no change">
-                    <label for="image">Upload Image</label>
-                    <input type="file" class="form-control" id="image" name="image">
-                </div>
-                <button type="submit" class="btn btn-primary">Update Profile</button>
-            </form>
+<hr>
+
+
+
+    <!-- Form for updating attendance records -->
+    <h3>Update Attendance Record</h3>
+    <form method="post">
+        <div class="form-group">
+            <label for="present">Present:</label>
+            <input type="number" class="form-control" id="present" name="present" value="<?php echo htmlspecialchars($attendanceDetails['present'] ?? 0); ?>">
         </div>
-    </div>
-
-    <div class="row">
-        <!-- Address Update Section -->
-        <div class="col-md-12 header-area">
-            <h4>Address Section + Update</h4>
+        <div class="form-group">
+            <label for="absent">Absent:</label>
+            <input type="number" class="form-control" id="absent" name="absent" value="<?php echo htmlspecialchars($attendanceDetails['absent'] ?? 0); ?>">
         </div>
-        <div class="col-md-12 content-area">
-            <form method="post" action="">
-                <div class="form-row">
-                    <div class="form-group col-md-6">
-                        <label for="house">House</label>
-                        <input type="text" class="form-control" id="house" name="house" value="<?php echo htmlspecialchars($student['house']); ?>">
-                    </div>
-                    <div class="form-group col-md-6">
-                        <label for="town">Town</label>
-                        <input type="text" class="form-control" id="town" name="town" value="<?php echo htmlspecialchars($student['town']); ?>">
-                    </div>
-                    <div class="form-group col-md-6">
-                        <label for="county">County</label>
-                        <input type="text" class="form-control" id="county" name="county" value="<?php echo htmlspecialchars($student['county']); ?>">
-                    </div>
-                    <div class="form-group col-md-6">
-                        <label for="country">Country</label>
-                        <input type="text" class="form-control" id="country" name="country" value="<?php echo htmlspecialchars($student['country']); ?>">
-                    </div>
-                    <div class="form-group col-md-6">
-                        <label for="postcode">Postcode</label>
-                        <input type="text" class="form-control" id="postcode" name="postcode" value="<?php echo htmlspecialchars($student['postcode']); ?>">
-                    </div>
-                    <div class="form-group col-md-12">
-                        <button type="submit" class="btn btn-primary">Update Address</button>
-                    </div>
-                </div>
-            </form>
+        <div class="form-group">
+            <label for="medical">Medical:</label>
+            <input type="number" class="form-control" id="medical" name="medical" value="<?php echo htmlspecialchars($attendanceDetails['medical'] ?? 0); ?>">
         </div>
-    </div>
-
-    <!-- Emergency Contacts Section -->
-    <div class="row">
-        <div class="col-md-12 header-area">
-            <h4>Emergency Contacts</h4>
-        </div>
-        <?php
-        $maxContacts = 3;
-        $count = count($emergencyContacts);
-        for ($i = 0; $i < $maxContacts; $i++) :
-            if (isset($emergencyContacts[$i])) :
-                $contact = $emergencyContacts[$i];
-                ?>
-                <div class="col-md-4 content-area">
-                    <div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title"><?php echo htmlspecialchars($contact['relation']); ?></h5>
-                            <p class="card-text"><?php echo htmlspecialchars($contact['firstname'] . ' ' . $contact['lastname']); ?></p>
-                            <p class="card-text"><?php echo htmlspecialchars($contact['phone']); ?></p>
-                            <a href="edit_emergency_contact.php?contactid=<?php echo $contact['id']; ?>" class="btn btn-primary">Edit Contact</a>
-                        </div>
-                    </div>
-                </div>
-            <?php else : ?>
-                <div class="col-md-4 content-area">
-                    <div class="emergency-tile empty">
-                        <p>No contact here. <a href="add_emergency_contact.php?studentid=<?php echo $studentId; ?>">Add one?</a></p>
-                    </div>
-                </div>
-            <?php endif;
-        endfor;
-        ?>
-    </div>
-
-    <!-- Bootstrap JS and jQuery -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</body>
-
-
-
-
-<!-- Attendance Record Section -->
-<div class="row mt-5">
-    <div class="col-md-6">
-        <h4>Attendance Record</h4>
-        <form>
-            <div class="form-group">
-                <label for="present">Present</label>
-                <input type="text" class="form-control" id="present" name="present">
-            </div>
-            <div class="form-group">
-                <label for="absent">Absent</label>
-                <input type="text" class="form-control" id="absent" name="absent">
-            </div>
-            <div class="form-group">
-                <label for="medical">Medical</label>
-                <input type="text" class="form-control" id="medical" name="medical">
-            </div>
-            <button type="button" class="btn btn-primary" id="saveAttendance">Save Attendance</button>
-            <p id="attendancePercentage">The Student's attendance is currently 0%</p>
-        </form>
-    </div>
-    <div class="col-md-6">
-        <canvas id="attendanceChart" style="max-width: 300px;"></canvas>
-    </div>
+        <button type="submit" name="update_attendance" class="btn btn-primary">Update Attendance</button>
+    </form>
 </div>
 
-<!-- Bootstrap JS and jQuery -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-<!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    var ctx = document.getElementById('attendanceChart').getContext('2d');
-    var chart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: ['Present', 'Absent', 'Medical'],
-            datasets: [{
-                data: [0, 0, 0], // Initialize with 0, you'll update these values dynamically
-                backgroundColor: ['green', 'red', 'blue']
-            }]
-        },
-        options: {
-            responsive: true,
-            title: {
-                display: true,
-                text: 'Attendance Record'
-            }
-        }
-    });
-
-// Add event listener to the save attendance button
-document.getElementById('saveAttendance').addEventListener('click', function() {
-    var present = document.getElementById('present').value || 0;
-    var absent = document.getElementById('absent').value || 0;
-    var medical = document.getElementById('medical').value || 0;
-
-    // Send AJAX request to update attendance data in the database
-    $.ajax({
-        url: 'save_attendance.php', // Replace with the correct URL to your server-side script
-        method: 'POST',
-        data: {
-            present: present,
-            absent: absent,
-            medical: medical,
-            studentId: <?php echo $studentId; ?> // Pass the student ID to the server-side script
-        },
-        success: function(response) {
-            console.log(response); // Log the server's response to the console
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-            console.log("AJAX error: " + textStatus + ' : ' + errorThrown);
-        }
-    });
-});
-
-    // Add event listeners to the input fields
-    document.getElementById('present').addEventListener('input', updateChart);
-    document.getElementById('absent').addEventListener('input', updateChart);
-    document.getElementById('medical').addEventListener('input', updateChart);
-
-    function updateChart() {
-        // Update the chart's data
-        var present = document.getElementById('present').value || 0;
-        var absent = document.getElementById('absent').value || 0;
-        var medical = document.getElementById('medical').value || 0;
-        chart.data.datasets[0].data = [present, absent, medical];
-
-        // Redraw the chart
-        chart.update();
-
-        // Update the attendance percentage
-        var total = parseInt(present) + parseInt(absent) + parseInt(medical);
-        var percentage = total > 0 ? Math.round((present / total) * 100) : 0;
-        document.getElementById('attendancePercentage').textContent = "The Student's attendance is currently " + percentage + "%";
-    }
-
-$(document).ready(function() {
-    $('#saveAttendance').click(function() {
-        // Extract student ID from URL parameters
-        var urlParams = new URLSearchParams(window.location.search);
-        var studentId = urlParams.get('id');
-
-        // Get attendance values from form inputs
-        var present = $('#present').val();
-        var absent = $('#absent').val();
-        var medical = $('#medical').val();
-
-        // Send the AJAX request
-        $.ajax({
-            url: 'save_attendance.php',
-            type: 'POST',
-            data: {
-                present: present,
-                absent: absent,
-                medical: medical,
-                studentId: studentId
-            },
-            success: function(response) {
-                // Handle the response from the server
-                console.log(response);
-            }
-        });
-    });
-});
-
-</script>
 </body>
-</html>
-
-
-
 </html>
