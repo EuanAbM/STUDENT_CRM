@@ -220,6 +220,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_attendance']))
                             <input type="password" class="form-control" id="password" name="password" placeholder="Enter new password or leave blank for no change">
                         </div>
                         <button type="submit" class="btn btn-primary">Update Profile</button>
+
+
+                        <script>
+        // JavaScript to handle page reload on button click
+        document.getElementById('updateProfileButton').addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent default form submission behavior
+            window.location.reload(true); // Force reload from the server, not cache
+        });
+    </script>
                     </form>
                     
                     <!-- Back Button -->
@@ -352,11 +361,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_STRING);
     $image = $student['image']; // Default to current image
 
-    // Handle image upload
-    if ($_FILES['image']['error'] == 0) {
-        $image = 'uploads/' . basename($_FILES['image']['name']);
-        move_uploaded_file($_FILES['image']['tmp_name'], $image);
-    }
 
     // Prepare and execute update statement
     $updateStmt = $conn->prepare("UPDATE student SET firstname=?, lastname=?, dob=?, house=?, town=?, county=?, country=?, postcode=?, image=? WHERE studentid=?");
@@ -370,9 +374,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $passwordStmt->execute();
     }
 
-    // Redirect back to students page
-    header('Location: students.php');
-    exit;
+
 
 }
 
@@ -452,6 +454,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     });
 
     //
+
+    <!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    var ctx = document.getElementById('attendanceChart').getContext('2d');
+    var chart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Present', 'Absent', 'Medical'],
+            datasets: [{
+                data: [<?php echo $present; ?>, <?php echo $absent; ?>, <?php echo $medical; ?>],
+                backgroundColor: ['green', 'red', 'blue']
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true, // This maintains the aspect ratio
+            title: {
+                display: true,
+                text: 'Attendance Record'
+            }
+        }
+    });
+</script>
 
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
