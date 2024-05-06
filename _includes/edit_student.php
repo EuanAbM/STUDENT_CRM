@@ -39,8 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (in_array($fileType, $allowedTypes)) {
                 if ($_FILES['image']['size'] < 2000000) { // Limit file size to under 2MB
-                    $targetDir = "uploads/";
-                    $fileName = basename($_FILES['image']['name']);
+                    $targetDir = "uploads/"; // Ensure this directory exists and is writable
+                    $fileName = time() . basename($_FILES['image']['name']);
                     $targetFilePath = $targetDir . $fileName;
 
                     if (move_uploaded_file($_FILES['image']['tmp_name'], $targetFilePath)) {
@@ -48,11 +48,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $updateImageStmt = $conn->prepare($updateImageSql);
                         $updateImageStmt->bind_param("si", $targetFilePath, $studentId);
                         $updateImageStmt->execute();
+                        echo '<div class="alert alert-success">Image uploaded successfully.</div>';
                     } else {
                         echo '<div class="alert alert-danger">Error uploading file.</div>';
                     }
                 } else {
-                    echo '<div class="alert alert-danger">File size is too large. File must be less than 2MB.</div>';
+                    echo '<div class="alert alert-danger">File size too large. Must be less than 2MB.</div>';
                 }
             } else {
                 echo '<div class="alert alert-danger">Invalid file type. Only JPG, PNG, and GIF are allowed.</div>';
@@ -60,6 +61,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         // Refetch to update the display
+        fetchData($conn, $student, $attendanceDetails, $studentId);
+    }
+}
+
         fetchData($conn, $student, $attendanceDetails, $studentId);
     }
 }
