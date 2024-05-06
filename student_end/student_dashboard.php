@@ -249,6 +249,17 @@ if (!$emergencyDetails) {
 }
 
 // Handling form submission
+    if (isset($_POST['password']) && !empty($_POST['password'])) {
+        $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+        $passwordStmt = $conn->prepare("UPDATE student SET password=? WHERE studentid=?");
+        $passwordStmt->bind_param("si", $password, $studentId);
+        if ($passwordStmt->execute()) {
+            echo '<div class="alert alert-success">Password updated successfully.</div>';
+        } else {
+            echo '<div class="alert alert-danger">Failed to update password.</div>';
+        }
+    }
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $relation = $_POST['relation'] ?? '';
     $first_name = $_POST['first_name'] ?? '';
