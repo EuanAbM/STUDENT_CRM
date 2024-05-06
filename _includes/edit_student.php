@@ -2,94 +2,63 @@
 session_start();
 require '../_includes/dbconnect.inc'; // Assuming the same database connection logic
 
-
 // Get student ID from the URL
 $studentId = isset($_GET['id']) ? $_GET['id'] : '';
 
-// Fetch student information
-$student = [];
-if ($studentId) {
-    $stmt = $conn->prepare("SELECT * FROM student WHERE studentid = ?");
-    $stmt->bind_param("s", $studentId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $student = $result->fetch_assoc();
-
-    if (!$student) {
-        die('Student not found');
-    }
-} else {
+if (empty($studentId)) {
     die('No student ID provided');
 }
 
+// Fetch student and attendance data
+function fetchData($conn, &$student, &$attendanceDetails, $studentId) {
+    $stmt = $conn->prepare("SELECT * FROM student WHERE studentid = ?");
+    $stmt->bind_param("s", $studentId);
+    $stmt->execute();
+    $student = $stmt->get_result()->fetch_assoc();
+
+    $attendanceStmt = $conn->prepare("SELECT * FROM attendance WHERE studentid = ?");
+    $attendanceStmt->bind_param("s", $studentId);
+    $attendanceStmt->execute();
+    $attendanceDetails = $attendanceStmt->get_result()->fetch_assoc();
+}
+
+// Initial fetch to set default data
+fetchData($conn, $student, $attendanceDetails, $studentId);
+
 // Handle POST request to update student information
-// Start transaction for student detail update
-$conn->begin_transaction();
-try {
-    // Collect all data from the form
-    $firstname = $_POST['firstname'];
-    $lastname = $_POST['lastname'];
-    $dob = $_POST['dob'];
-    $house = $_POST['house'];
-    $town = $_POST['town'];
-    $county = $_POST['county'];
-    $postcode = $_POST['postcode'];
-    $country = $_POST['country'];
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['update_student'])) {
+        // Update student info
+        $student['firstname'] = $_POST['firstname'] ?? $student['firstname'];
+        $student['lastname'] = $_POST['lastname'] ?? $student['lastname'];
+        $student['dob'] = $_POST['dob'] ?? $student['dob'];
+        $student['house'] = $_POST['house'] ?? $student['house'];
+        $student['town'] = $_POST['town'] ?? $student['town'];
+        $student['county'] = $_POST['county'] ?? $student['county'];
+        $student['postcode'] = $_POST['postcode'] ?? $student['postcode'];
+        $student['country'] = $_POST['country'] ?? $student['country'];
 
-    // Prepare SQL statement to update student data
-    $updateSql = "UPDATE student SET firstname = ?, lastname = ?, dob = ?, house = ?, town = ?, county = ?, postcode = ?, country = ? WHERE studentid = ?";
-    $updateStmt = $conn->prepare($updateSql);
-    $updateStmt->bind_param("sssssssss", $firstname, $lastname, the dob, the house, the town, the county, the postcode, the country, the studentId);
-    $updateStmt->execute();
-    $conn->commit();
-} catch (Exception $e) {
-    $conn->rollback();
-    echo "Error updating student details: " . $e->getMessage();
+        $updateSql = "UPDATE student SET firstname=?, lastname=?, dob=?, house=?, town=?, county=?, postcode=?, country=? WHERE studentid=?";
+        $updateStmt = $conn->prepare($updateSql);
+        $updateStmt->bind_param("sssssssss", $student['firstname'], $student['lastname'], $student['dob'], $student['house'], $student['town'], $student['county'], $student['postcode'], $student['country'], $studentId);
+        $updateStmt->execute();
+    }
+
+    if (isset($_POST['update_attendance'])) {
+        // Update attendance info
+        $attendanceDetails['present'] = $_POST['present'] ?? $attendanceDetails['present'];
+        $attendanceDetails['absent'] = $_POST['absent'] ?? $attendanceDetails['absent'];
+        $attendanceDetails['medical'] = $_POST['medical'] ?? $attendanceDetails['medical'];
+
+        $updateAttendanceSql = "UPDATE attendance SET present=?, absent=?, medical=? WHERE studentid=?";
+        $updateAttendanceStmt = $conn->prepare($updateAttendanceSql);
+        $updateAttendanceStmt->bind_param("iiis", $attendanceDetails['present'], $attendanceDetails['absent'], $attendanceDetails['medical'], $studentId);
+        $updateAttendanceStmt->execute();
+    }
+    // Refetch data to refresh the state
+    fetchData($conn, $student, $attendanceDetails, $studentId);
 }
-
-// Separate transaction for attendance update
-$conn->begin_transaction();
-try {
-    // Extract only attendance-related data
-    $present = $_POST['present'];
-    $absent = $_POST['absent'];
-    $medical = $_POST['medical'];
-
-    $updateAttendanceSql = "UPDATE attendance SET present = ?, absent = ?, medical = ? WHERE studentid = ?";
-    $updateAttendanceStmt = $conn->prepare($updateAttendanceSql);
-    $updateAttendanceStmt->bind_param("iiis", $present, $absent, the medical, the studentId);
-    $updateAttendanceStmt->execute();
-    $conn->commit();
-} catch (Exception $e) {
-    $conn->rollback();
-    echo "Error updating attendance: " . $e->getMessage();
-}
-
-}
-
-
-
-
-
-
-
-
 ?>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -375,7 +344,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <?= $message ?>
 
 <!-- Attendance update form -->
-<form method="post">
+<form method="post" action="" enctype="multipart/form-data">
     <div class="row mt-5">
         <div class="col-md-6">
             <h4>Attendance Record</h4>
