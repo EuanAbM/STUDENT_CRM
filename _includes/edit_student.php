@@ -179,7 +179,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             window.location.reload(true); // Force reload from the server, not cache
         });
     </script>
-                    </form>
+                    
                     
                     <!-- Back Button -->
                     <a href="students.php" class="btn btn-secondary mt-3"><i class="fas fa-arrow-left"></i> Back to Students</a>
@@ -204,7 +204,7 @@ $emergencyContacts = $emergencyResult->fetch_assoc(); // Fetch only one record a
 ?>
 
 <div class="container mt-5">
-    <form method="POST" action="" class="form">
+    
         <input type="hidden" name="contact_id" value="<?php echo htmlspecialchars($emergencyContacts['id']); ?>">
 
         <div class="mb-3">
@@ -232,7 +232,7 @@ $emergencyContacts = $emergencyResult->fetch_assoc(); // Fetch only one record a
         </div>
 
         <button type="submit" name="update_emergency" class="btn btn-primary">Update</button>
-    </form>
+    
 </div>
 <hr>
 
@@ -324,6 +324,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $passwordStmt->execute();
     }
 
+    
 
 
 }
@@ -344,7 +345,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <?= $message ?>
 
 <!-- Attendance update form -->
-<form method="post" action="" enctype="multipart/form-data">
+
     <div class="row mt-5">
         <div class="col-md-6">
             <h4>Attendance Record</h4>

@@ -122,6 +122,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['emergency'])) {
         }
     }
 
+    if (!empty($password)) {
+        $password = password_hash($password, PASSWORD_DEFAULT);
+        $passwordStmt = $conn->prepare("UPDATE student SET password=? WHERE studentid=?");
+        $passwordStmt->bind_param("si", $password, $studentId);
+        $passwordStmt->execute();
+        $password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_STRING);
+    }
+
     // Refresh emergency details
     $emergencyDetails = [];
     $detailsResult = mysqli_query($conn, $getDetailsSql);
