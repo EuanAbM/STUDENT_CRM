@@ -198,6 +198,8 @@ $emergencyContacts = $emergencyResult->fetch_assoc(); // Fetch only one record a
 // Establish connection or start session
 // Initialize your database connection here
 
+$message = ""; // Initialize message variable
+
 // Check if the form has been submitted
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Assuming you have a connection variable named $conn
@@ -206,9 +208,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->bind_param("iiii", $_POST['present'], $_POST['absent'], $_POST['medical'], $studentId);
     
     if ($stmt->execute()) {
-        echo "<p>Record updated successfully.</p>";
+        $message = "<div class='alert alert-success alert-dismissible fade show' role='alert'>
+                        Record updated successfully.
+                        <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
+                            <span aria-hidden='true'>&times;</span>
+                        </button>
+                    </div>";
     } else {
-        echo "<p>Error updating record: " . $conn->error . "</p>";
+        $message = "<div class='alert alert-danger alert-dismissible fade show' role='alert'>
+                        Error updating record: " . htmlspecialchars($conn->error) . "
+                        <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
+                            <span aria-hidden='true'>&times;</span>
+                        </button>
+                    </div>";
     }
 }
 
@@ -232,6 +244,9 @@ if(isset($studentId)) { // Check if studentId is set
     echo "<p>Student ID not found.</p>";
 }
 ?>
+
+<!-- Display alerts -->
+<?= $message ?>
 
 <!-- Attendance update form -->
 <form method="post">
@@ -268,7 +283,7 @@ if(isset($studentId)) { // Check if studentId is set
     </div>
 </form>
 
-<!-- Scripting for Chart.js and Bootstrap -->
+<!-- Scripting for Chart.js, Bootstrap, and Alert Close -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -292,7 +307,8 @@ if(isset($studentId)) { // Check if studentId is set
             }
         }
     });
-</script>
+
+    //
 
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
