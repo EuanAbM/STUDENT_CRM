@@ -91,129 +91,86 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_attendance']))
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Student Information</title>
+    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+
+    <style>
+        /* Add custom styles here similar to student_dashboard.php */
+        .emergency-contact {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .student-photo {
+            width: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
 <div class="container mt-5">
-<h2>Edit Student Information</h2>
-<!-- Form for updating student details -->
-<form method="post" enctype="multipart/form-data">
-    <div class="form-group">
-        <label for="firstname">First Name:</label>
-        <input type="text" class="form-control" id="firstname" name="firstname" value="<?php echo htmlspecialchars($student['firstname']); ?>" required>
-    </div>
-    <div class="form-group">
-        <label for="lastname">Last Name:</label>
-        <input type="text" class="form-control" id="lastname" name="lastname" value="<?php echo htmlspecialchars($student['lastname']); ?>" required>
-    </div>
-    <div class="form-group">
-        <label for="dob">Date of Birth:</label>
-        <input type="date" class="form-control" id="dob" name="dob" value="<?php echo htmlspecialchars($student['dob']); ?>" required>
-    </div>
-    <div class="form-group">
-        <label for="house">House:</label>
-        <input type="text" class="form-control" id="house" name="house" value="<?php echo htmlspecialchars($student['house']); ?>" required>
-    </div>
-    <div class="form-group">
-        <label for="town">Town:</label>
-        <input type="text" class="form-control" id="town" name="town" value="<?php echo htmlspecialchars($student['town']); ?>" required>
-    </div>
-    <div class="form-group">
-        <label for="county">County:</label>
-        <input type="text" class="form-control" id="county" name="county" value="<?php echo htmlspecialchars($student['county']); ?>" required>
-    </div>
-    <div class="form-group">
-        <label for="postcode">Postcode:</label>
-        <input type="text" class="form-control" id="postcode" name="postcode" value="<?php echo htmlspecialchars($student['postcode']); ?>" required>
-    </div>
-    <div class="form-group">
-        <label for="country">Country:</label>
-        <input type="text" class="form-control" id="country" name="country" value="<?php echo htmlspecialchars($student['country']); ?>" required>
-    </div>
-
-    <!-- Profile Image Section -->
-    <div class="form-group text-center">
-        <label for="image">Profile Image</label><br>
-        <?php if (!empty($student['image'])) : ?>
-            <img src="<?php echo htmlspecialchars($student['image']); ?>" alt="Student Image" class="profile-image mb-3">
-        <?php else : ?>
-            <img src="placeholder.jpg" alt="Student Image" class="profile-image mb-3">
-        <?php endif; ?>
-        <input type="file" class="form-control-file" id="image" name="image">
-    </div>
-
-    <button type="submit" name="update_student" class="btn btn-primary">Update Information</button>
-</form>
-
-
-    <hr>
-
-
-    <h2>Edit Emergency Contact</h2>
-    <?php
-$fetchEmergencyContactsSql = "SELECT *, DATE_FORMAT(last_updated, '%d-%m-%Y %H:%i:%s') as formatted_last_updated FROM student_emergency WHERE studentid = ?";
-$fetchEmergencyStmt = $conn->prepare($fetchEmergencyContactsSql);
-$fetchEmergencyStmt->bind_param("s", $studentId);
-$fetchEmergencyStmt->execute();
-$emergencyResult = $fetchEmergencyStmt->get_result();
-$emergencyContacts = $emergencyResult->fetch_assoc(); // Fetch only one record assuming a student has one emergency contact
-?>
-
-<div class="container mt-5">
-    <form method="POST" action="" class="form">
-        <input type="hidden" name="contact_id" value="<?php echo htmlspecialchars($emergencyContacts['id']); ?>">
-
-        <div class="mb-3">
-            <label for="relation" class="form-label">Relationship</label>
-            <input type="text" id="relation" name="relation" class="form-control" value="<?php echo htmlspecialchars($emergencyContacts['relation']); ?>">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Edit Student Information</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Form for updating student details -->
+                    <form method="post" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="firstname">First Name:</label>
+                            <input type="text" class="form-control" id="firstname" name="firstname" value="<?php echo htmlspecialchars($student['firstname']); ?>" required>
+                        </div>
+                        <!-- Further form elements -->
+                        <button type="submit" name="update_student" class="btn btn-primary">Update Information</button>
+                    </form>
+                    <hr>
+                    <!-- Emergency Contacts -->
+                    <h4>Student Emergency Contact</h4>
+                    <p>In the event of an emergency, these are the contact details we will contact if needed.</p>
+                    <!-- Insert form for emergency contact details here -->
+                    <hr>
+                    <!-- Attendance Chart -->
+                    <h4>Attendance Record</h4>
+                    <canvas id="attendanceChart"></canvas>
+                    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+                    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                    <script>
+                        var ctx = document.getElementById('attendanceChart').getContext('2d');
+                        var chart = new Chart(ctx, {
+                            type: 'pie',
+                            data: {
+                                labels: ['Present', 'Absent', 'Medical'],
+                                datasets: [{
+                                    data: [<?php echo $present; ?>, <?php echo $absent; ?>, <?php echo $medical; ?>],
+                                    backgroundColor: ['green', 'red', 'blue']
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: true, // This maintains the aspect ratio
+                                title: {
+                                    display: true,
+                                    text: 'Attendance Record'
+                                }
+                            }
+                        });
+                    </script>
+                </div>
+            </div>
         </div>
-
-        <div class="mb-3">
-            <label for="first_name" class="form-label">First Name</label>
-            <input type="text" id="first_name" name="first_name" class="form-control" value="<?php echo htmlspecialchars($emergencyContacts['first_name']); ?>">
-        </div>
-
-        <div class="mb-3">
-            <label for="last_name" class="form-label">Last Name</label>
-            <input type="text" id="last_name" name="last_name" class="form-control" value="<?php echo htmlspecialchars($emergencyContacts['last_name']); ?>">
-        </div>
-
-        <div class="mb-3">
-            <label for="phone" class="form-label">Phone</label>
-            <input type="text" id="phone" name="phone" class="form-control" value="<?php echo htmlspecialchars($emergencyContacts['phone']); ?>">
-        </div>
-
-        <div class="text-muted mb-3">
-            This emergency contact was last updated on: <?php echo $emergencyContacts['formatted_last_updated']; ?>
-        </div>
-
-        <button type="submit" name="update_emergency" class="btn btn-primary">Update</button>
-    </form>
+    </div>
 </div>
-<hr>
-
-
-
-    <!-- Form for updating attendance records -->
-    <h3>Update Attendance Record</h3>
-    <form method="post">
-        <div class="form-group">
-            <label for="present">Present:</label>
-            <input type="number" class="form-control" id="present" name="present" value="<?php echo htmlspecialchars($attendanceDetails['present'] ?? 0); ?>">
-        </div>
-        <div class="form-group">
-            <label for="absent">Absent:</label>
-            <input type="number" class="form-control" id="absent" name="absent" value="<?php echo htmlspecialchars($attendanceDetails['absent'] ?? 0); ?>">
-        </div>
-        <div class="form-group">
-            <label for="medical">Medical:</label>
-            <input type="number" class="form-control" id="medical" name="medical" value="<?php echo htmlspecialchars($attendanceDetails['medical'] ?? 0); ?>">
-        </div>
-        <button type="submit" name="update_attendance" class="btn btn-primary">Update Attendance</button>
-    </form>
-</div>
-
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
+
