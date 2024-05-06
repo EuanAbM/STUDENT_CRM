@@ -197,7 +197,7 @@ echo "<img src='{$image_path}' alt='Student Images' style='border-radius: 50%; f
                     <p><strong>Name:</strong> <?php echo $student['firstname'] . ' ' . $student['lastname']; ?></p>
                     <p><strong>Date of Birth:</strong> <?php echo $student['dob']; ?></p>
                     <p><strong>Address:</strong> <?php echo $student['house'] . ', ' . $student['town'] . ', ' . $student['county'] . ', ' . $student['postcode'] . ', ' . $student['country']; ?></p>
-                    
+                    <p> If these detials are incorrect, please email: enroll@bucks.ac.uk as a matter or urgency.<p>
                     <hr>
 
                     <!-- Update Password Form -->
