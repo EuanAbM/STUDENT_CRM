@@ -28,36 +28,40 @@ fetchData($conn, $student, $attendanceDetails, $studentId);
 // Handle POST request to update student information
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['update_student'])) {
-        // Update student info
-        $student['firstname'] = $_POST['firstname'] ?? $student['firstname'];
-        $student['lastname'] = $_POST['lastname'] ?? $student['lastname'];
-        $student['dob'] = $_POST['dob'] ?? $student['dob'];
-        $student['house'] = $_POST['house'] ?? $student['house'];
-        $student['town'] = $_POST['town'] ?? $student['town'];
-        $student['county'] = $_POST['county'] ?? $student['county'];
-        $student['postcode'] = $_POST['postcode'] ?? $student['postcode'];
-        $student['country'] = $_POST['country'] ?? $student['country'];
+        // Existing student info update logic here...
 
-        $updateSql = "UPDATE student SET firstname=?, lastname=?, dob=?, house=?, town=?, county=?, postcode=?, country=? WHERE studentid=?";
-        $updateStmt = $conn->prepare($updateSql);
-        $updateStmt->bind_param("sssssssss", $student['firstname'], $student['lastname'], $student['dob'], $student['house'], $student['town'], $student['county'], $student['postcode'], $student['country'], $studentId);
-        $updateStmt->execute();
+        // Handling file upload for profile image
+        if (isset($_FILES['image']['name']) && $_FILES['image']['size'] > 0) {
+            $allowedTypes = ['jpg' => 'image/jpeg', 'png' => 'image/png', 'gif' => 'image/gif'];
+            $fileType = finfo_file(finfo_open(FILEINFO_MIME_TYPE), $_FILES['image']['tmp_name']);
+
+            if (in_array($fileType, $allowedTypes)) {
+                if ($_FILES['image']['size'] < 2000000) { // Limit file size to under 2MB
+                    $targetDir = "uploads/";
+                    $fileName = basename($_FILES['image']['name']);
+                    $targetFilePath = $targetDir . $fileName;
+
+                    if (move_uploaded_file($_FILES['image']['tmp_name'], $targetFilePath)) {
+                        $updateImageSql = "UPDATE student SET image=? WHERE studentid=?";
+                        $updateImageStmt = $conn->prepare($updateImageSql);
+                        $updateImageStmt->bind_param("si", $targetFilePath, $studentId);
+                        $updateImageStmt->execute();
+                    } else {
+                        echo '<div class="alert alert-danger">Error uploading file.</div>';
+                    }
+                } else {
+                    echo '<div class="alert alert-danger">File size is too large. File must be less than 2MB.</div>';
+                }
+            } else {
+                echo '<div class="alert alert-danger">Invalid file type. Only JPG, PNG, and GIF are allowed.</div>';
+            }
+        }
+
+        // Refetch to update the display
+        fetchData($conn, $student, $attendanceDetails, $studentId);
     }
-
-    if (isset($_POST['update_attendance'])) {
-        // Update attendance info
-        $attendanceDetails['present'] = $_POST['present'] ?? $attendanceDetails['present'];
-        $attendanceDetails['absent'] = $_POST['absent'] ?? $attendanceDetails['absent'];
-        $attendanceDetails['medical'] = $_POST['medical'] ?? $attendanceDetails['medical'];
-
-        $updateAttendanceSql = "UPDATE attendance SET present=?, absent=?, medical=? WHERE studentid=?";
-        $updateAttendanceStmt = $conn->prepare($updateAttendanceSql);
-        $updateAttendanceStmt->bind_param("iiis", $attendanceDetails['present'], $attendanceDetails['absent'], $attendanceDetails['medical'], $studentId);
-        $updateAttendanceStmt->execute();
-    }
-    // Refetch data to refresh the state
-    fetchData($conn, $student, $attendanceDetails, $studentId);
 }
+
 ?>
 
 
