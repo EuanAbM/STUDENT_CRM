@@ -68,6 +68,7 @@ if ($studentId) {
 
 // Handle POST request to update attendance
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_attendance'])) {
+    // Extract only attendance-related data
     $present = $_POST['present'];
     $absent = $_POST['absent'];
     $medical = $_POST['medical'];
@@ -77,11 +78,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_attendance']))
     $updateAttendanceStmt->bind_param("iiis", $present, $absent, $medical, $studentId);
     $updateAttendanceStmt->execute();
 
+    // Additional logic to handle the response and possible errors
     if ($updateAttendanceStmt->affected_rows > 0) {
         echo "<script>alert('Attendance updated successfully.');</script>";
     } else {
         echo "<script>alert('Update failed or no changes made.');</script>";
     }
+}
 
 
 
