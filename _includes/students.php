@@ -95,8 +95,21 @@ if(isset($_POST['delete_records'])) {
     }
 }
 
-$sql = "SELECT * FROM student WHERE studentid LIKE '%$searchTerm%' OR firstname LIKE '%$searchTerm%' OR lastname LIKE '%$searchTerm%' OR postcode LIKE '%$searchTerm%'";
+$sql = "SELECT * FROM student WHERE studentid LIKE '%$searchTerm%' OR firstname LIKE '%$searchTerm%' OR lastname LIKE '%$searchTerm%' OR postcode LIKE '%$searchTerm%' LIMIT $perPage OFFSET $offset";
 $result = mysqli_query($conn, $sql);
+$totalQuery = mysqli_query($conn, "SELECT COUNT(*) FROM student WHERE studentid LIKE '%$searchTerm%' OR firstname LIKE '%$searchTerm%' OR lastname LIKE '%$searchTerm%' OR postcode LIKE '%$searchTerm%'");
+$totalRows = mysqli_fetch_array($totalQuery)[0];
+$totalPages = ceil($totalRows / $perPage);
+
+// Pagination controls
+echo '<nav aria-label="Page navigation example">';
+echo '<ul class="pagination">';
+for ($i = 1; $i <= $totalPages; $i++) {
+    echo "<li class='page-item'><a class='page-link' href='?page=$i'>$i</a></li>";
+}
+echo '</ul>';
+echo '</nav>';
+
 ?>
 
 <!-- Full-Screen Image Modal -->
