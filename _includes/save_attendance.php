@@ -28,7 +28,6 @@ if(isset($_POST['present']) && isset($_POST['absent']) && isset($_POST['medical'
     echo "Error: POST data is not set or studentId is not in the POST data";
 }
 
-
 if(isset($_POST['studentId'])) {
     $studentId = $conn->real_escape_string($_POST['studentId']); // Sanitize the studentId
 
@@ -44,7 +43,8 @@ if(isset($_POST['studentId'])) {
             echo "Error creating new attendance record: " . $conn->error;
         }
     }
-    
+}
+
 // Close the database connection
 $conn->close();
 ?>

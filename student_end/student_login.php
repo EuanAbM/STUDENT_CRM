@@ -17,41 +17,37 @@
 <body>
 
 <section class="ftco-section">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-6 text-center mb-5">
-            </div>
-        </div>
-        <div class="row justify-content-center">
-            <div class="col-md-6 col-lg-5">
-                <div class="card login-wrap p-4 p-md-5">
-                    <div class="icon d-flex align-items-center justify-content-center">
-                        
-                    </div>
-                    <h3 class="text-center mb-4">Student Login</h3>
-                    <form action="#" class="login-form">
+    <div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">Student Login</div>
+                <div class="card-body">
+                    <?php
+                    session_start();
+                    require '../_includes/dbconnect.inc';
+                    
+                    if (isset($_SESSION['login_error'])) {
+                        echo '<div class="alert alert-danger">' . $_SESSION['login_error'] . '</div>';
+                        unset($_SESSION['login_error']);
+                    }
+                    ?>
+                    <form method="post" action="process_login.php">
                         <div class="form-group">
-                            <input type="text" class="form-control rounded-left" placeholder="Username" required>
+                            <label for="studentId">Student ID</label>
+                            <input type="text" class="form-control" id="studentId" name="studentId" required>
                         </div>
                         <div class="form-group">
-                            <input type="password" class="form-control rounded-left" placeholder="Password" required>
+                            <label for="password">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
                         </div>
-                        <div class="form-group d-md-flex">
-                            <div class="w-50">
-
-                            </div>
-                            <div class="w-50 text-md-centre">
-                            </div>
-                        </div>
-                        <div class="text-center">
-    <button type="submit" class="btn btn-primary rounded submit p-3 px-5">Get Started</button>
-</div>
-
+                        <button type="submit" class="btn btn-primary">Login</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+</div>
 </section>
 
 <!-- Bootstrap JS (place before </body>) -->
@@ -59,3 +55,9 @@
 
 </body>
 </html>
+
+
+
+
+
+<form method="post" action="process_login.php">

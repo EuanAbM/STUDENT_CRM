@@ -296,8 +296,7 @@ if (!$emergencyContacts) {
 
 
 <?php
-// Establish connection or start session
-// Initialize your database connection here
+
 
 $message = ""; // Initialize message variable
 
@@ -344,6 +343,7 @@ if(isset($studentId)) { // Check if studentId is set
 } else {
     echo "<p>Student ID not found.</p>";
 }
+
 ?>
 
 
