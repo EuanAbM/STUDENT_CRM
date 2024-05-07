@@ -91,79 +91,47 @@ if(isset($_POST['delete_records'])) {
     }
 }
 
-$sql = "SELECT * FROM student WHERE studentid LIKE '%$searchTerm%' OR firstname LIKE '%$searchTerm%' OR lastname LIKE '%$searchTerm%' OR postcode LIKE '%$searchTerm%'";
+$records_per_page = 15;
+$page = isset($_GET['page']) ? (int)$_GET['page'] - 1 : 0;
+$offset = $page * $records_per_page;
+
+$searchTerm = $_GET['search'] ?? '';
+$searchTerm = mysqli_real_escape_string($conn, $searchTerm);
+
+$sql = "SELECT * FROM student WHERE studentid LIKE '%$searchTerm%' OR firstname LIKE '%$searchTerm%' OR lastname LIKE '%$searchTerm%' OR postcode LIKE '%$searchTerm%' LIMIT $records_per_page OFFSET $offset";
 $result = mysqli_query($conn, $sql);
-?>
 
-<!-- Full-Screen Image Modal -->
-<div class="modal fade" id="fullScreenImageModal" tabindex="-1" role="dialog" aria-labelledby="fullScreenImageModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-body">
-                <img id="fullScreenImage" src="" alt="Full Screen Image">
-            </div>
-        </div>
-    </div>
-</div>
+$total_pages_sql = "SELECT COUNT(*) FROM student WHERE studentid LIKE '%$searchTerm%' OR firstname LIKE '%$searchTerm%' OR lastname LIKE '%$searchTerm%' OR postcode LIKE '%$searchTerm%'";
+$total_rows_result = mysqli_query($conn, the_total_pages_sql);
+$total_rows = mysqli_fetch_array($total_rows_result)[0];
+$total_pages = ceil($total_rows / $records_per_page);
 
-<div class="container mt-5">
-    <form method="post" action="" onsubmit="return confirm('Are you sure you want to delete the selected records?');">
-        <button type="submit" name="delete_records" class="btn btn-danger mb-3">Delete Selected</button>
-        <div class="table-responsive">
-            <table class="table table-striped table-bordered table-hover">
-                <thead>
-                    <tr>
-                        <th scope="col"><input type="checkbox" id="select_all"></th> <!-- Select All checkbox -->
-                        <th scope="col">ID</th>
-                        <th scope="col">Image</th>
-                        <th scope="col">First Name</th>
-                        <th scope="col">Last Name</th>
-                        <th scope="col">DOB</th>
-                        <th scope="col">1st Line Address</th>
-                        <th scope="col">Town</th>
-                        <th scope="col">County</th>
-                        <th scope="col">Country</th>
-                        <th scope="col">Postcode</th>
-                        <th scope="col">Email</th>
-                        <th scope="col">Phone</th>
-                        <th scope="col">Password</th>
-                        <th scope="col">Actions</th> <!-- New column for actions -->
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    while ($row = mysqli_fetch_array($result)) {
-                        echo '<tr>';
-                        echo '<td><input type="checkbox" name="delete_ids[]" value="' . $row['studentid'] . '"></td>';
-                        echo '<td>' . $row['studentid'] . '</td>';
-                        
-                        echo '<td><img src="' . $row['image'] . '" alt="Student Image" class="student-image" data-toggle="modal" data-target="#fullScreenImageModal" data-fullscreen-image="' . $row['image'] . '"></td>'; // Apply CSS class to make image circular and open modal on click
-                       
-                        echo '<td>' . $row['firstname'] . '</td>';
-                        echo '<td>' . $row['lastname'] . '</td>';
-                        echo '<td>' . $row['dob'] . '</td>';
-                        echo '<td>' . $row['house'] . '</td>';
-                        echo '<td>' . $row['town'] . '</td>';
-                        echo '<td>' . $row['county'] . '</td>';
-                        echo '<td>' . $row['country'];
-                        if ($row['country'] == 'Great Britain') {
-                            echo ' <span class="flag-icon flag-icon-gb"></span>';
-                        } else {
-                            echo ' <span class="flag-icon flag-icon-' . strtolower($row['country']) . '"></span>';
-                        }
-                        echo '</td>';
-                        echo '<td>' . $row['postcode'] . '</td>';
-                        echo '<td>' . $row['email'] . '</td>';
-                        echo '<td>' . $row['phone'] . '</td>';
-                        echo '<td class="password">' . $row['password'] . '<i class="fas fa-copy copy-icon" data-password="' . $row['password'] . '"></i></td>';
-                        echo '<td>';
-                        echo '<a href="edit_student.php?id=' . $row['studentid'] . '" class="btn btn-primary btn-sm mr-2">Edit</a>'; // Edit button
-                        echo '<a href="delete.php?id=' . $row['studentid'] . '" class="btn btn-danger btn-sm">Delete</a>'; // Delete button (separate link for deletion)
-                        echo '</td>';
-                        echo '</tr>';
-                    }
-                    ?>
-                </tbody>
+while ($row = mysqli_fetch_array($result)) {
+    echo '<tr>';
+    echo '<td><input type="checkbox" name="delete_ids[]" value="' . $row['studentid'] . '"></td>';
+    echo '<td>' . $row['studentid'] . '</td>';
+    echo '<td><img src="' . $row['image'] . '" alt="Student Image" class="student-image" data-toggle="modal" data-target="#fullScreenImageModal" data-fullscreen-image="' . $row['image'] . '"></td>';
+    echo '<td>' . $row['firstname'] . '</td>';
+    echo '<td>' . $row['lastname'] . '</td>';
+    echo '<td>' . $row['dob'] . '</td>';
+    echo '<td>' . $row['house'] . ', ' . $row['town'] . ', ' . $row['county'] . ', ' . $row['postcode'] . '</td>';
+    echo '<td>' . $row['country'];
+    if ($row['country'] == 'Great Britain') {
+        echo ' <span class="flag-icon flag-icon-gb"></span>';
+    } else {
+        echo ' <span class="flag-icon flag-icon-' . strtolower($row['country']) . '"></span>';
+    }
+    echo '</td>';
+    echo '<td>' . $row['email'] . '</td>';
+    echo '<td>' . $row['phone'] . '</td>';
+    echo '<td class="password">' . $row['password'] . '<i class="fas fa-copy copy-icon" data-password="' . $row['password'] . '"></i></td>';
+    echo '<td>';
+    echo '<a href="edit_student.php?id=' . $row['studentid'] . '" class="btn btn-primary btn-sm mr-2">Edit</a>'; // Edit button
+    echo '<a href="delete.php?id=' . $row['studentid'] . '" class="btn btn-danger btn-sm">Delete</a>'; // Delete button (separate link for deletion)
+    echo '</td>';
+    echo '</tr>';
+}
+
             </table>
             <script>
                 $(document).ready(function() {
