@@ -63,108 +63,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Refetch to update the display
         fetchData($conn, $student, $attendanceDetails, $studentId);
     }
+
+    fetchData($conn, $student, $attendanceDetails, $studentId);
+
 }
 
         fetchData($conn, $student, $attendanceDetails, $studentId);
     
 
-
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['image'])) {
-            $uploadDir = 'uploads/';
-            $uploadFile = $uploadDir . basename($_FILES['image']['name']);
-        
-            if (move_uploaded_file($_FILES['image']['tmp_name'], $uploadFile)) {
-                // Check if $studentId is set and not empty
-                if (!isset($studentId) || empty($studentId)) {
-                    echo "Student ID is not set or empty.\n";
-                    return;
-                }
-        
-                // Check if $conn is a valid MySQLi connection object
-                if (!$conn instanceof mysqli) {
-                    echo "Invalid database connection.\n";
-                    return;
-                }
-        
-                // Prepare an SQL statement
-                $stmt = $conn->prepare("UPDATE student SET image = ? WHERE studentid = ?");
-        
-                // Check if the SQL statement was prepared successfully
-                if (!$stmt) {
-                    echo "Failed to prepare SQL statement: " . $conn->error . "\n";
-                    return;
-                }
-        
-                // Bind the new image path and the student ID to the SQL statement
-                $stmt->bind_param("ss", $uploadFile, $studentId);
-        
-                // Execute the SQL statement
-                if ($stmt->execute()) {
-                    echo "Image path updated successfully.\n";
-                } else {
-                    echo "Error executing SQL statement: " . $stmt->error . "\n";
-                }
-            } else {
-                echo "Possible file upload attack!\n";
-            }
-
-            
-            
-            // Assuming you have the new image path and student id in these variables
-            $newImagePath = '/path/to/new/image.jpg'; // replace with actual new image path
-            $studentId = $_GET['id']; // get student id from URL
-            
-            
-            // Prepare the SQL statement
-            $stmt = $conn->prepare("UPDATE student SET image = ? WHERE studentid = ?");
-            
-            // Bind the new image path and student id to the SQL statement
-            $stmt->bind_param("si", $newImagePath, $studentId);
-            
-            // Execute the SQL statement
-            $stmt->execute();
-
-            // Get the file extension
-$extension = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
-
-// Get the student id from URL
-$studentId = $_GET['id'];
-
-// Generate a random string of 6 digits
-$randomString = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
-
-// Create a filename using the student id and the random string
-$filename = $studentId . '.' . $randomString . '.' . $extension;
-
-// Set the upload path
-$uploadFile = $uploadDir . $filename;
-
-// Move the uploaded file to the upload directory
-if (move_uploaded_file($_FILES['image']['tmp_name'], $uploadFile)) {
-    // Prepare the SQL statement
-    $stmt = $conn->prepare("UPDATE student SET image = ? WHERE studentid = ?");
-
-    // Bind the new image path and the student ID to the SQL statement
-    $stmt->bind_param("ss", $uploadFile, $studentId);
-
-    // Execute the SQL statement
-    if ($stmt->execute()) {
-        echo "Image path updated successfully.\n";
-    } else {
-        echo "Error executing SQL statement: " . $stmt->error . "\n";
-    }
-} else {
-    echo "Possible file upload attack!\n";
-}
-            
-            
-        
-
-        }
-
-
-?>
-
+        ?>
 
 
 
@@ -300,14 +207,33 @@ if (move_uploaded_file($_FILES['image']['tmp_name'], $uploadFile)) {
     <hr>
 
 
-    <h2>Edit Emergency Contact</h2>
+    <h4>Emergency Contact</h4>
     <?php
-$fetchEmergencyContactsSql = "SELECT *, DATE_FORMAT(last_updated, '%d-%m-%Y %H:%i:%s') as formatted_last_updated FROM student_emergency WHERE studentid = ?";
+$fetchEmergencyContactsSql = "SELECT *, DATE_FORMAT(last_updated, '%d/%m/%Y at %H:%i') as formatted_last_updated FROM student_emergency WHERE studentid = ?";
 $fetchEmergencyStmt = $conn->prepare($fetchEmergencyContactsSql);
 $fetchEmergencyStmt->bind_param("s", $studentId);
 $fetchEmergencyStmt->execute();
 $emergencyResult = $fetchEmergencyStmt->get_result();
 $emergencyContacts = $emergencyResult->fetch_assoc(); // Fetch only one record assuming a student has one emergency contact
+
+// If no emergency contact exists for the student, insert a new record
+if (!$emergencyContacts) {
+    $insertEmergencyContactSql = "INSERT INTO student_emergency (studentid) VALUES (?)";
+    $insertStmt = $conn->prepare($insertEmergencyContactSql);
+    $insertStmt->bind_param("s", $studentId);
+    $insertStmt->execute();
+
+    // Fetch the newly created emergency contact
+    $fetchEmergencyStmt->execute();
+    $emergencyResult = $fetchEmergencyStmt->get_result();
+    $emergencyContacts = $emergencyResult->fetch_assoc();
+
+
+
+    
+}
+
+// Continue with the form rendering...
 ?>
 
 <div class="container mt-5">
