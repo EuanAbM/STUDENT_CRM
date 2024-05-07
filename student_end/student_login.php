@@ -3,46 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <br>
+    <br>
+
     <title>Student Login</title>
+    <img src="bnu.png" alt="BUCKS UNI LOGO" style="width: 350px; height: 250px; display: block; margin: 0 auto;">
+
+
+
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">Student Login</div>
-                <div class="card-body">
-                    <?php
-                    session_start();
-                    require '../_includes/dbconnect.inc';
-                    
-                    if (isset($_SESSION['login_error'])) {
-                        echo '<div class="alert alert-danger">' . $_SESSION['login_error'] . '</div>';
-                        unset($_SESSION['login_error']);
-                    }
-                    ?>
-                    <form method="post" action="process_login.php">
+<section class="ftco-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 text-center mb-5">
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card login-wrap p-4 p-md-5">
+                    <div class="icon d-flex align-items-center justify-content-center">
+                        
+                    </div>
+                    <h3 class="text-center mb-4">Student Login</h3>
+                    <form action="#" class="login-form">
                         <div class="form-group">
-                            <label for="studentId">Student ID</label>
-                            <input type="text" class="form-control" id="studentId" name="studentId" required>
+                            <input type="text" class="form-control rounded-left" placeholder="Username" required>
                         </div>
                         <div class="form-group">
-                            <label for="password">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" required>
+                            <input type="password" class="form-control rounded-left" placeholder="Password" required>
                         </div>
-                        <button type="submit" class="btn btn-primary">Login</button>
+                        <div class="form-group d-md-flex">
+                            <div class="w-50">
+
+                            </div>
+                            <div class="w-50 text-md-centre">
+                            </div>
+                        </div>
+                        <div class="text-center">
+    <button type="submit" class="btn btn-primary rounded submit p-3 px-5">Get Started</button>
+</div>
+
                     </form>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>
 
 <!-- Bootstrap JS (place before </body>) -->
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 </body>
 </html>

@@ -28,16 +28,23 @@ if(isset($_POST['present']) && isset($_POST['absent']) && isset($_POST['medical'
     echo "Error: POST data is not set or studentId is not in the POST data";
 }
 
-// Close the database connection
-$conn->close();
-?>
-        echo "Error updating attendance data: " . $conn->error;
-    }
-} else {
-    error_log("Error: POST data is not set or studentId is not in the POST data");
-    echo "Error: POST data is not set or studentId is not in the POST data";
-}
 
+if(isset($_POST['studentId'])) {
+    $studentId = $conn->real_escape_string($_POST['studentId']); // Sanitize the studentId
+
+    // Check if the student already has an attendance record
+    $checkSql = "SELECT * FROM attendance WHERE studentid = '$studentId'";
+    $checkResult = $conn->query($checkSql);
+    if ($checkResult->num_rows == 0) {
+        // If no attendance record exists, insert a new record with default values
+        $insertSql = "INSERT INTO attendance (studentid, present, absent, medical) VALUES ('$studentId', 0, 0, 0)";
+        if ($conn->query($insertSql) === TRUE) {
+            echo "New attendance record created successfully for studentId = $studentId";
+        } else {
+            echo "Error creating new attendance record: " . $conn->error;
+        }
+    }
+    
 // Close the database connection
 $conn->close();
 ?>
