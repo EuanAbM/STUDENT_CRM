@@ -131,9 +131,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
                         
-<input type="file" name="profile_picture" id="profile_picture">
+<input type="file" name="profile_picture" id="profile_picture" onchange="previewImage();">
+<img id="imagePreview" src="#" alt="Image Preview" style="display: none; max-width: 150px; height: auto;">
 
+<script>
+function previewImage() {
+    var file = document.getElementById('profile_picture').files[0];
+    var reader = new FileReader();
+    
+    reader.onloadend = function() {
+        let preview = document.getElementById('imagePreview');
+        preview.src = reader.result;
+        preview.style.display = 'block';
+    }
 
+    if (file) {
+        reader.readAsDataURL(file);
+    } else {
+        document.getElementById('imagePreview').src = "";
+        document.getElementById('imagePreview').style.display = 'none';
+    }
+}
+</script>
     
                         <!-- Student Personal Details -->
                         <div class="form-group">
