@@ -33,8 +33,34 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Validate password pattern
     $password_pattern = "/^(?=.*[!@#$%^&*-])(?=.*[0-9])(?=.*[A-Z]).{8,}$/";
     if (!preg_match($password_pattern, $password)) {
-        echo '<div class="alert alert-danger mt-3">Invalid password format.</div>';
+        echo '<div class="alert alert-danger mt-3">Invalid password format. Please use at least one uppercase, lowercase number and special charecter.</div>';
         exit;
+    }
+
+
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        // Other form data processing...
+    
+        $password = mysqli_real_escape_string($conn, $_POST['password']);
+        // Use PHP's built-in password_hash() function to encrypt the password
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+    
+        // Validate password pattern
+        $password_pattern = "/^(?=.*[!@#$%^&*-])(?=.*[0-9])(?=.*[A-Z]).{8,}$/";
+        if (!preg_match($password_pattern, $hashed_password)) {
+            echo '<div class="alert alert-danger mt-3">Invalid password format. Please use at least one uppercase, lowercase number and special charecter.</div>';
+            exit;
+        }
+    
+        // Other form data processing...
+    
+        $insertSql = "INSERT INTO student (studentid, firstname, lastname, dob, house, town, county, country, postcode, password, email, image) VALUES ('$studentid', '$firstname', '$lastname', '$dob', '$house', '$town', '$county', '$country', '$postcode', '$hashed_password', '$email', '$image')";
+    
+        if (mysqli_query($conn, $insertSql)) {
+            echo '<div class="alert alert-success mt-3">Student added successfully.</div>';
+        } else {
+            echo '<div class="alert alert-danger mt-3">Error adding student: ' . mysqli_error($conn) . '</div>';
+        }
     }
 
     // Upload image file
@@ -54,16 +80,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
 
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Other form data processing...
 
     $password = mysqli_real_escape_string($conn, $_POST['password']);
-    $hashed_password = md5($password);
+    // Use PHP's built-in password_hash() function to encrypt the password
+    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
     $sql = "INSERT INTO students (password, ...) VALUES ('$hashed_password', ...)";
     // Execute the query...
 
-    // Other form data processing...
+
 }
 
 }
@@ -150,6 +177,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 reader.readAsDataURL(event.target.files[0]);
             });
         });
+
+
+
+
+
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Other form data processing...
+
+    $password = mysqli_real_escape_string($conn, $_POST['password']);
+    // Use PHP's built-in password_hash() function to encrypt the password
+    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
+    $insertSql = "INSERT INTO student (studentid, firstname, lastname, dob, house, town, county, country, postcode, password, image) VALUES ('$studentid', '$firstname', '$lastname', '$dob', '$house', '$town', '$county', '$country', '$postcode', '$hashed_password', '$image')";
+
+    if (mysqli_query($conn, $insertSql)) {
+        echo '<div class="alert alert-success mt-3">Student added successfully.</div>';
+    } else {
+        echo '<div class="alert alert-danger mt-3">Error adding student: ' . mysqli_error($conn) . '</div>';
+    }
+}
+
+
     </script>
 </head>
 <body>
@@ -212,5 +261,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         </form>
         </div>
         </body>
+
+        
         
         </html>

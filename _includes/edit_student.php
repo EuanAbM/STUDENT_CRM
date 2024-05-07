@@ -24,6 +24,22 @@ function fetchData($conn, &$student, &$attendanceDetails, $studentId) {
     $attendanceDetails = $attendanceStmt->get_result()->fetch_assoc();
 }
 
+// Fetch student information
+$student = [];
+if ($studentId) {
+    $stmt = $conn->prepare("SELECT * FROM student WHERE studentid = ?");
+    $stmt->bind_param("s", $studentId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $student = $result->fetch_assoc();
+    if (!$student) {
+        header("Location: http://localhost/php_student_crm/student_crm/_includes/404.php"); // Redirect to 404 page
+        exit;
+    }
+} else {
+    die('No student ID provided');
+}
+
 // Initial fetch to set default data
 fetchData($conn, $student, $attendanceDetails, $studentId);
 
@@ -476,4 +492,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
+
+
+
+
+
+
+
 
