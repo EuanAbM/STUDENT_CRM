@@ -74,6 +74,10 @@ require 'dbconnect.inc';
 $searchTerm = $_GET['search'] ?? '';
 $searchTerm = mysqli_real_escape_string($conn, $searchTerm);
 
+
+
+
+
 // Check if form is submitted for deleting records
 if(isset($_POST['delete_records'])) {
     $deleteIds = $_POST['delete_ids'];
@@ -165,6 +169,10 @@ $result = mysqli_query($conn, $sql);
                     ?>
                 </tbody>
             </table>
+            <div id="pagination">
+    <a href="#" class="previous-page">Previous</a>
+    <a href="#" class="next-page">Next</a>
+</div>
             <script>
                 $(document).ready(function() {
                     $('#search').keyup(function() {
@@ -180,6 +188,19 @@ $result = mysqli_query($conn, $sql);
                     });
                 });
             </script>
+
+            <script>
+                var searchText = $(this).val();
+var page = 12; // The current page number. Update this value based on the user's interaction with the pagination controls.
+$.ajax({
+    url: '_includes/search.php',
+    method: 'POST',
+    data: {search: searchText, page: page},
+    success: function(data) {
+        $('#tableData').html(data);
+    }
+});
+</script>
 
         </div>
         <button type="submit" name="delete" class="btn btn-danger mb-3">Delete Selected</button>
@@ -212,6 +233,57 @@ $result = mysqli_query($conn, $sql);
         });
     });
 </script>
+
+
+
+<script>
+$(document).ready(function() {
+    var page = 1; // Start on page 1
+
+    // Load the initial set of results
+    loadResults(page);
+
+    // Handle the pagination controls
+    $('.previous-page').on('click', function(e) {
+        e.preventDefault();
+        if (page > 1) {
+            page--;
+            loadResults(page);
+        }
+    });
+
+    $('.next-page').on('click', function(e) {
+        e.preventDefault();
+        page++;
+        loadResults(page);
+    });
+
+    function loadResults(page) {
+        var searchText = $('#search').val();
+        $.ajax({
+            url: '_includes/search.php',
+            method: 'POST',
+            data: {search: searchText, page: page},
+            success: function(data) {
+                $('#tableData').html(data);
+            }
+        });
+    }
+});
+
+// Get the page number from the request. If it's not set, default to 1.
+$page = isset($_POST['page']) ? (int)$_POST['page'] : 1;
+
+// Define the number of results per page
+$results_per_page = 15;
+
+// Calculate the "offset" for the SQL query
+$offset = ($page - 1) * $results_per_page;
+
+// Modify your SQL query to include a LIMIT clause
+$sql = "SELECT * FROM students WHERE firstname LIKE '%$search%' OR lastname LIKE '%$search%' ORDER BY studentid ASC LIMIT $offset, $results_per_page";
+
+// Execute the query and fetch the results...
 
 </body>
 </html>
