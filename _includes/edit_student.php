@@ -112,18 +112,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <style>
-        .profile-image {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin: 0 auto;
-            display: block;
-        }
-    </style>
+ 
 </head>
 <body>
+
+
+
 
 <div class="container mt-5">
     <div class="row justify-content-center">
@@ -133,19 +127,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="card-body">
                     <!-- Student Information Form -->
                     <form method="post" action="" enctype="multipart/form-data">
-                        <!-- Profile Image -->
-                        <div class="form-group text-center">
-                            <label for="image">Profile Image</label><br>
-                            <?php if (!empty($student['image'])) : ?>
-                                <img src="<?php echo $student['image']; ?>" alt="Student Image" class="profile-image mb-3">
-                            <?php else : ?>
-                                <img src="placeholder.jpg" alt="Student Image" class="profile-image mb-3">
-                            <?php endif; ?>
-                            <input type="file" class="form-control-file" id="image" name="image">
-                        </div>
+
+
 
                         
-                        
+<input type="file" name="profile_picture" id="profile_picture">
+
+
+    
                         <!-- Student Personal Details -->
                         <div class="form-group">
                             <label for="firstname">First Name</label>
@@ -468,3 +457,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
+
