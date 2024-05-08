@@ -83,7 +83,7 @@
                 </thead>
                 <tbody id="tableData">
                     <?php
-                    require 'dbconnect.inc'; // Ensure the dbconnect.inc file path is correct
+                    require 'dbconnect.inc';
 
                     $searchTerm = $_GET['search'] ?? '';
                     $searchTerm = mysqli_real_escape_string($conn, $searchTerm);

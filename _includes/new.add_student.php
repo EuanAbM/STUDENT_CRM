@@ -1,6 +1,6 @@
 <?php
 session_start();
-require '../_includes/dbconnect.inc'; // Assuming the same database connection logic
+require '../_includes/dbconnect.inc'; 
 
 // Handle POST request to add student information
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Assume other student details are also being processed here...
+
 }
 
 ?>

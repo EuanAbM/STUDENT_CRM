@@ -2,7 +2,7 @@
 
 
 session_start();
-require '../_includes/dbconnect.inc'; // Assuming the same database connection logic
+require '../_includes/dbconnect.inc'; 
 
 // Get student ID from the URL
 $studentId = isset($_GET['id']) ? $_GET['id'] : '';
@@ -33,7 +33,7 @@ if ($studentId) {
     $result = $stmt->get_result();
     $student = $result->fetch_assoc();
     if (!$student) {
-        header("Location: http://localhost/php_student_crm/student_crm/_includes/404.php"); // Redirect to 404 page
+        header("Location: http://localhost/php_student_crm/student_crm/_includes/404.php"); // Redirect to 404 page when student ID is wrong.
         exit;
     }
 } else {
@@ -43,7 +43,7 @@ if ($studentId) {
 // Initial fetch to set default data
 fetchData($conn, $student, $attendanceDetails, $studentId);
 
-// Handle POST request to update student information
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['update_student'])) {
         // Existing student info update logic here...
@@ -76,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Refetch to update the display
+
         fetchData($conn, $student, $attendanceDetails, $studentId);
     }
 
@@ -88,19 +88,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
 
         ?>
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -213,8 +200,8 @@ function previewImage() {
                         <script>
         // JavaScript to handle page reload on button click
         document.getElementById('updateProfileButton').addEventListener('click', function(event) {
-            event.preventDefault(); // Prevent default form submission behavior
-            window.location.reload(true); // Force reload from the server, not cache
+            event.preventDefault(); 
+            window.location.reload(true); // Force reload from the server, not cache on the local machine!!
         });
     </script>
                     
@@ -238,9 +225,9 @@ $fetchEmergencyStmt = $conn->prepare($fetchEmergencyContactsSql);
 $fetchEmergencyStmt->bind_param("s", $studentId);
 $fetchEmergencyStmt->execute();
 $emergencyResult = $fetchEmergencyStmt->get_result();
-$emergencyContacts = $emergencyResult->fetch_assoc(); // Fetch only one record assuming a student has one emergency contact
+$emergencyContacts = $emergencyResult->fetch_assoc(); 
 
-// If no emergency contact exists for the student, insert a new record
+// If no emergency contact exists for the student, insert a new record INTO THE emergency_detials register.
 if (!$emergencyContacts) {
     $insertEmergencyContactSql = "INSERT INTO student_emergency (studentid) VALUES (?)";
     $insertStmt = $conn->prepare($insertEmergencyContactSql);
@@ -257,7 +244,7 @@ if (!$emergencyContacts) {
     
 }
 
-// Continue with the form rendering...
+
 ?>
 
 <div class="container mt-5">
@@ -324,7 +311,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 
-// Fetch existing data
+
 if(isset($studentId)) { // Check if studentId is set
     $sql = "SELECT * FROM attendance WHERE studentid = ?";
     $stmt = $conn->prepare($sql);
@@ -498,7 +485,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <script>
 function trackAttendance() {
-    const studentId = '<?= $studentId; ?>'; // Ensure you have the student ID variable available in the scope
+    const studentId = '<?= $studentId; ?>'; 
     fetch('track_attendance.php', {
         method: 'POST',
         headers: {

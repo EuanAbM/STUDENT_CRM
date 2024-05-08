@@ -24,10 +24,6 @@ $emergencyResult = $emergencyStmt->get_result();
 while ($contact = $emergencyResult->fetch_assoc()) {
     $emergencyContacts[] = $contact;
 
-
-
-
-
     
 }
 
@@ -208,7 +204,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <div class="row mt-5">
     <div class="col-md-12 header-area">
         <h4>Modules</h4>
-        <!-- Add your modules content here -->
+
     </div>
 </div>
 
@@ -291,7 +287,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </html>
 
 
-    <!-- Additional sections can be added here -->
 
     <!-- Bootstrap JS and jQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>

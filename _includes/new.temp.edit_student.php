@@ -1,6 +1,6 @@
 <?php
 session_start();
-require '../_includes/dbconnect.inc'; // Assuming the same database connection logic
+require '../_includes/dbconnect.inc'; 
 
 
 // Get student ID from the URL
@@ -22,7 +22,7 @@ if ($studentId) {
     die('No student ID provided');
 }
 
-// Handle POST request to update student information
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_student'])) {
     // Collect all data from the form
     $firstname = $_POST['firstname'];
@@ -47,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_student'])) {
     }
 }
 
-// Fetch emergency contact information
+
 
 
 
@@ -82,13 +82,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_attendance']))
     } else {
         echo "<script>alert('Update failed or no changes made.');</script>";
     }
-
-
-
-
-
-
-
 
 
     

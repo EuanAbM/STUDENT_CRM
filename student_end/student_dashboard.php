@@ -18,8 +18,6 @@ $student = mysqli_fetch_assoc($result);
 
 
 
-// ...
-
 // Update emergency details if form is submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['emergency'])) {
     // Clear existing emergency details
@@ -44,11 +42,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['emergency'])) {
         $emergencyDetails[] = $detail;
     }
 }
-
-
-
-
-
 
 
 
@@ -89,9 +82,6 @@ $detailsResult = $detailsStmt->get_result();
 while ($detail = $detailsResult->fetch_assoc()) {
     $emergencyDetails[] = $detail;
 }
-
-
-
 
 
 

@@ -1,7 +1,6 @@
 <?php
 // update_profile_picture.php
 
-// Assuming you have a session started and the user's ID is stored in $_SESSION['user_id']
 session_start();
 require '../_includes/dbconnect.inc'; // Assuming the same database connection logic
 

@@ -2,7 +2,7 @@
 require '../vendor/autoload.php';
 require 'dbconnect.inc';
 
-$faker = Faker\Factory::create('en_GB'); // Set Faker to generate data for Great Britain
+$faker = Faker\Factory::create('en_GB'); 
 
 $recordCount = isset($_GET['records']) ? intval($_GET['records']) : 5;
 
@@ -21,7 +21,7 @@ for ($i = 0; $i < $recordCount; $i++) {
     $country = 'Great Britain'; // Set the country directly
     $postcode = $faker->postcode;
 
-    // Generate a fake profile image URL (using Unsplash random image)
+
     $image = "https://source.unsplash.com/random/150x150";
 
     // Bind parameters and execute the prepared statement

@@ -14,7 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($result && mysqli_num_rows($result) > 0) {
         $student = mysqli_fetch_assoc($result);
 
-        // Verify password using password_verify
+
         if (password_verify($password, $student['password'])) {
             // Password is correct, set session variables and redirect to dashboard
             $_SESSION['studentId'] = $student['studentid'];

@@ -1,8 +1,3 @@
-
-
-require '../_includes/dbconnect.inc'; // Assuming the same database connection logic
-
-
 <?php
 require '../_includes/dbconnect.inc'; // Assuming the same database connection logic
 
