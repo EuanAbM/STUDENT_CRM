@@ -105,7 +105,7 @@
                             echo '<tr>';
                             echo '<td><input type="checkbox" name="delete_ids[]" value="' . $row['studentid'] . '"></td>';
                             echo '<td>' . $row['studentid'] . '</td>';
-                            echo '<td><img src="' . $row['image'] . '" alt="Student Image" class="student-image" data-toggle="modal" data-target="#fullScreenImageModal" data-fullscreen-image="' . $row['image'] . '"></td>';
+                            echo '<td><img src="uploads/' . $row['image'] . '" alt="Student Image" class="student-image" data-toggle="modal" data-target="#fullScreenImageModal" data-fullscreen-image="' . $row['image'] . '"></td>';
                             echo '<td>' . $row['firstname'] . '</td>';
                             echo '<td>' . $row['lastname'] . '</td>';
                             echo '<td>' . $row['dob'] . '</td>';

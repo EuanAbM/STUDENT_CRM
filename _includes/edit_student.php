@@ -148,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                         
 <input type="file" name="profile_picture" id="profile_picture" onchange="previewImage();">
-<img id="imagePreview" src="#" alt="Image Preview" style="display: none; max-width: 150px; height: auto;">
+<img id="imagePreview" src="" alt="Image Preview" style="display: none; max-width: 150px; height: auto;">
 
 <script>
 function previewImage() {
@@ -157,7 +157,7 @@ function previewImage() {
     
     reader.onloadend = function() {
         let preview = document.getElementById('imagePreview');
-        preview.src = reader.result;
+        preview.src = reader.result; 
         preview.style.display = 'block';
     }
 
@@ -369,7 +369,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $image = $student['image']; // Default to current image
 
 
-    // Prepare and execute update statement
     $updateStmt = $conn->prepare("UPDATE student SET firstname=?, lastname=?, dob=?, house=?, town=?, county=?, country=?, postcode=?, image=? WHERE studentid=?");
     $updateStmt->bind_param("sssssssssi", $firstname, $lastname, $dob, $house, $town, $county, $country, $postcode, $image, $studentId);
     $updateStmt->execute();
@@ -406,6 +405,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="row mt-5">
         <div class="col-md-6">
             <h4>Attendance Record</h4>
+            <button type="button" class="btn btn-primary" onclick="trackAttendance()">Track Attendance</button>
+
             <table class="table table-striped table-hover">
                 <thead>
                     <tr>
@@ -495,6 +496,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 
 
+<script>
+function trackAttendance() {
+    const studentId = '<?= $studentId; ?>'; // Ensure you have the student ID variable available in the scope
+    fetch('track_attendance.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `studentid=${studentId}&absent=0&present=0&medical=0`
+    })
+    .then(response => response.text())
+    .then(data => alert(data))
+    .catch(error => console.error('Error:', error));
+}
+</script>
 
 
 

@@ -1,8 +1,6 @@
 <?php
 require 'dbconnect.inc';
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+
 
 if (!empty($_POST['delete_ids'])) {
     echo "Deleting records: " . implode(", ", $_POST['delete_ids']) . "<br>";
@@ -27,6 +25,24 @@ if (!empty($_POST['delete_ids'])) {
             echo "Error deleting student record: " . mysqli_error($conn) . "<br>";
         }
     }
+
+    // Delete related records from the attendance table
+$deleteAttendanceSql = "DELETE FROM attendance WHERE studentid = $studentId";
+if (mysqli_query($conn, $deleteAttendanceSql)) {
+    echo "Attendance records deleted for student ID: $studentId<br>";
+} else {
+    echo "Error deleting attendance records: " . mysqli_error($conn) . "<br>";
+}
+
+// Delete related records from the student_emergency table
+$deleteEmergencySql = "DELETE FROM student_emergency WHERE studentid = $studentId";
+if (mysqli_query($conn, $deleteEmergencySql)) {
+    echo "Emergency records deleted for student ID: $studentId<br>";
+} else {
+    echo "Error deleting emergency records: " . mysqli_error($conn) . "<br>";
+}
+
+
     echo "Redirecting to students.php<br>";
     // Redirect back to the student list
     // header('Location: students.php');
